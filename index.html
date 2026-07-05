@@ -460,7 +460,7 @@
             <select id="tieBreakType">
               <option value="none">None</option>
               <option value="text">Tie-break answer</option>
-              <option value="numeric">SportsMaster Minigame - Stop the timer</option>
+              <option value="numeric">Closest numeric answer</option>
             </select>
             <span class="format-hint">Use this only when the main prediction may not produce a clear winner.</span>
           </label>
@@ -520,16 +520,16 @@
       <div class="toolbar">
         <div>
           <h2>Sports Master weekly tie-breaker - Stop the Timer</h2>
-          <p class="muted">When the weekly winner is tied - Stop the Timer.</p>
+          <p class="muted">When the weekly winner is tied - Stop the Timer</p>
         </div>
         <span id="miniGameStatus" class="status">Ready</span>
       </div>
 
       <div class="mini-game-panel">
         <div id="miniGameTarget" class="mini-game-target">Target: loading...</div>
-        <div class="muted">Click start, then press SPACE or click stop to get as close to the target time as possible. The timer is hidden while you play.</div>
+        <div class="muted">Click start, then press SPACE or click stop when you think you've reached the target. The timer is hidden while you play. Closest wins.</div>
         <div>
-          <button id="miniGameStartButton" type="button">Start Tie-Breaker</button>
+          <button id="miniGameStartButton" type="button">Start tie-breaker</button>
           <button id="miniGameStopButton" type="button" class="secondary" disabled>Stop</button>
         </div>
         <div id="miniGameMessage" class="mini-game-result"></div>
@@ -824,6 +824,33 @@
       return min + Math.floor(Math.random() * range);
     }
 
+    function deterministicWholeSecondsFromWeek(weekId, min = 5, max = 12) {
+      const text = String(weekId || "sports-master");
+      let hash = 0;
+      for (let i = 0; i < text.length; i += 1) {
+        hash = ((hash << 5) - hash) + text.charCodeAt(i);
+        hash |= 0;
+      }
+      const range = max - min + 1;
+      return min + (Math.abs(hash) % range);
+    }
+
+    function collectSportsmasterTieBreakAttempts() {
+      sportsmasterTieBreakAttempts = players
+        .map(player => {
+          const attempts = player.sportsmasterTieBreakAttempts || {};
+          const attempt = attempts[selectedWeekId];
+          if (!attempt) return null;
+          return {
+            id: player.id,
+            playerId: player.id,
+            playerNickname: player.nickname || player.fullName || "Player",
+            ...attempt
+          };
+        })
+        .filter(Boolean);
+    }
+
     function toggleTieBreakDetails() {
       const enabled = els.tieBreakType.value !== "none";
       els.tieBreakDetails.classList.toggle("hidden", !enabled);
@@ -862,14 +889,11 @@
     async function ensureWeekDocument() {
       const info = getCurrentWeekInfo();
       const weekRef = doc(db, "weeks", info.weekId);
-      const snap = await getDoc(weekRef);
-      const existingTarget = snap.exists() ? snap.data().sportsmasterTieBreakTarget : null;
 
       await setDoc(weekRef, {
         weekId: info.weekId,
         lockLabel: info.lockLabel,
         eventWindowLabel: info.windowLabel,
-        sportsmasterTieBreakTarget: existingTarget || randomWholeSeconds(5, 12),
         updatedAt: serverTimestamp()
       }, { merge: true });
     }
@@ -888,6 +912,7 @@
         players = snapshot.docs
           .map(d => ({ id: d.id, ...d.data() }))
           .sort((a, b) => String(a.nickname || a.fullName).localeCompare(String(b.nickname || b.fullName)));
+        collectSportsmasterTieBreakAttempts();
         render();
       });
 
@@ -939,35 +964,25 @@
 
     async function ensureSelectedWeekTieBreakTarget() {
       if (!selectedWeekId) return;
-      const weekRef = doc(db, "weeks", selectedWeekId);
-      const snap = await getDoc(weekRef);
-      const existingTarget = snap.exists() ? snap.data().sportsmasterTieBreakTarget : null;
-      if (existingTarget) {
-        sportsmasterTieBreakTarget = existingTarget;
-        return;
-      }
 
-      sportsmasterTieBreakTarget = randomWholeSeconds(5, 12);
-      await setDoc(weekRef, {
-        weekId: selectedWeekId,
-        sportsmasterTieBreakTarget,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
+      try {
+        const weekRef = doc(db, "weeks", selectedWeekId);
+        const snap = await getDoc(weekRef);
+        const existingTarget = snap.exists() ? snap.data().sportsmasterTieBreakTarget : null;
+        sportsmasterTieBreakTarget = existingTarget || deterministicWholeSecondsFromWeek(selectedWeekId, 5, 12);
+      } catch (error) {
+        sportsmasterTieBreakTarget = deterministicWholeSecondsFromWeek(selectedWeekId, 5, 12);
+      }
     }
 
     async function startSportsmasterTieBreakListener() {
       if (!selectedWeekId) return;
       if (unsubscribeSportsmasterTieBreak) unsubscribeSportsmasterTieBreak();
+      unsubscribeSportsmasterTieBreak = null;
 
       await ensureSelectedWeekTieBreakTarget();
-
-      unsubscribeSportsmasterTieBreak = onSnapshot(
-        collection(db, "weeks", selectedWeekId, "sportsmasterTieBreak"),
-        snapshot => {
-          sportsmasterTieBreakAttempts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-          renderSportsmasterTieBreak();
-        }
-      );
+      collectSportsmasterTieBreakAttempts();
+      renderSportsmasterTieBreak();
     }
 
     function listenToPredictions() {
@@ -1471,22 +1486,33 @@
       if (!currentUser || !currentPlayer || !selectedWeekId) return;
       if (!sportsmasterTieBreakTarget) throw new Error("Tie-break target is not ready yet.");
 
-      const attemptRef = doc(db, "weeks", selectedWeekId, "sportsmasterTieBreak", currentUser.uid);
-      const existing = await getDoc(attemptRef);
-      if (existing.exists()) {
+      if (getMySportsmasterTieBreakAttempt()) {
         throw new Error("You have already played this tie-break for the selected week.");
       }
 
       const roundedElapsed = Number(elapsedSeconds.toFixed(3));
       const differenceSeconds = Number(Math.abs(roundedElapsed - Number(sportsmasterTieBreakTarget)).toFixed(3));
-
-      await setDoc(attemptRef, {
-        playerId: currentUser.uid,
-        playerNickname: currentPlayer.nickname || currentPlayer.fullName,
+      const attempt = {
         targetSeconds: Number(sportsmasterTieBreakTarget),
         resultSeconds: roundedElapsed,
         differenceSeconds,
-        createdAt: serverTimestamp()
+        createdAtMs: Date.now()
+      };
+
+      await setDoc(doc(db, "players", currentUser.uid), {
+        sportsmasterTieBreakAttempts: {
+          [selectedWeekId]: attempt
+        },
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      sportsmasterTieBreakAttempts = sportsmasterTieBreakAttempts
+        .filter(existingAttempt => existingAttempt.playerId !== currentUser.uid && existingAttempt.id !== currentUser.uid);
+      sportsmasterTieBreakAttempts.push({
+        id: currentUser.uid,
+        playerId: currentUser.uid,
+        playerNickname: currentPlayer.nickname || currentPlayer.fullName,
+        ...attempt
       });
     }
 
