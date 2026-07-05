@@ -460,7 +460,7 @@
             <select id="tieBreakType">
               <option value="none">None</option>
               <option value="text">Tie-break answer</option>
-              <option value="numeric">Closest numeric answer</option>
+              <option value="numeric">SportsMaster Minigame - Stop the timer</option>
             </select>
             <span class="format-hint">Use this only when the main prediction may not produce a clear winner.</span>
           </label>
@@ -519,17 +519,17 @@
     <section id="sportsmasterTieBreakCard" class="card hidden">
       <div class="toolbar">
         <div>
-          <h2>Sports Master weekly tie-break game</h2>
-          <p class="muted">Use this when the weekly winner is tied. The target is a random whole number of seconds between 5 and 12 for the selected week.</p>
+          <h2>Sports Master weekly tie-breaker - Stop the Timer</h2>
+          <p class="muted">When the weekly winner is tied - Stop the Timer.</p>
         </div>
         <span id="miniGameStatus" class="status">Ready</span>
       </div>
 
       <div class="mini-game-panel">
         <div id="miniGameTarget" class="mini-game-target">Target: loading...</div>
-        <div class="muted">Click start, then press SPACE or click stop when you think the target time has passed. The timer is hidden while you play.</div>
+        <div class="muted">Click start, then press SPACE or click stop to get as close to the target time as possible. The timer is hidden while you play.</div>
         <div>
-          <button id="miniGameStartButton" type="button">Start tie-break</button>
+          <button id="miniGameStartButton" type="button">Start Tie-Breaker</button>
           <button id="miniGameStopButton" type="button" class="secondary" disabled>Stop</button>
         </div>
         <div id="miniGameMessage" class="mini-game-result"></div>
