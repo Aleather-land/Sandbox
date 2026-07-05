@@ -1,3 +1,293 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Invite team members
+
+image(46).png
+image(47).png
+
+Pasted text(3).txt
+Document
+I've created an online game called Sports Master.
+
+I want to be able to clear the event from the previous week or reset for the latest week.
+
+I want a leadership board that adds up the total score for all of the weeks.
+
+
+Pasted text(15).txt
+Document
+I want to make some more changes.  I want the winner selection to be accessible after Friday 1700 so people cannot accidently select the wrong winner during the week.  I also want the winner select to be open for the following week so late results can be added - currently this is read only.
+
+When you go to previous weeks it doesn't display the past scores for that week?
+
+Thought for 27s
+Yes, that was the problem. The old code was deliberately only counting weekly points when the selected week was the latest/current week, so when you viewed 2026-06-19, the leaderboard showed zero in the week column even though the table above clearly had winners recorded.
+
+I’ve fixed it so the leaderboard now shows:
+
+Column	Meaning
+Latest week	Points for the currently selected/latest week
+Selected week 2026-06-19	Points for whichever previous week you are viewing
+Total points	Points across all saved weeks
+This was caused by the getThisWeekPointsByPlayer() logic in your latest uploaded HTML only counting scores when viewingCurrentWeek() was true. 
+
+
+Download the corrected version here:
+
+
+Upload it to GitHub as your new index.html.
+
+
+
+Thought for 51s
+Done, Adam.
+
+I’ve added a Prediction format box directly below Challenge description. It now:
+
+Saves the requested format with the event.
+
+Displays the format as a new row in the event table.
+
+Shows the format inside each player’s prediction input as the placeholder.
+
+Adds a small format hint under the prediction box, so players can see exactly how the event owner wants the answer written.
+
+Keeps the hidden-predictions behaviour and duplicate-checking intact.
+
+I used the latest Sports Master version you uploaded as the base. 
+
+
+Download the updated version here:
+
+
+Upload that to GitHub as your new index.html.
+
+
+
+
+Pasted text(18).txt
+Document
+I have a bug that needs tracking down and fixing and additional field I would like to add.
+
+BUG - we are finding that, other than myself, players can only select themselves as winners and when they try to select the actual winner it says insufficient permissions?  Because I don't have this issue I cannot replicate it.
+
+Addition - alongside the ability for players to select the winner I would like to be able to add the actual result of the match
+
+Thought for 1m 31s
+Done, Adam.
+
+I tracked the permissions bug to this bit of logic in the uploaded HTML: when an event owner selected a winner, the app wrote to two places:
+
+weeks/{weekId}/events/{eventId}
+players/{winnerPlayerId}
+That second write is the likely cause. A normal player can usually update their own player document, but not another player’s document. So they could select themselves, but selecting someone else caused insufficient permissions. Your account likely has broader permissions, which is why you could not reproduce it. 
+
+
+I’ve fixed it by making winner selection update only the event document. The leaderboard already calculates totals from completed event documents, so the player document update was not needed.
+
+I’ve also added the Actual result field.
+
+What changed
+Event owners can now add an Actual result after Friday 1700 New Zealand Time.
+
+Actual results can also be added for previous weeks.
+
+Previous weeks remain read-only for events and predictions.
+
+Previous weeks still allow missing winners and actual results to be completed.
+
+Winner selection no longer tries to update another player’s document, which should fix the permissions issue.
+
+The actual result appears as a new row in the game table.
+
+Download the updated file here:
+
+
+Upload it to GitHub as your new index.html.
+
+
+
+I would like the ability to add a tie break into certain events, as the events are not always clear cut.  What could we do to break the tie?  is there some sort of game that we could play that requires us to hit space bar to get as close to something as possible?
+
+Thought for a couple of seconds
+Yes, that’s a really good idea. For Sports Master, I’d add an optional tie-break field to each event, and only use it when the event owner decides the normal prediction is too close or unclear.
+
+Best tie-break options
+Option 1: Closest numeric answer
+This is the simplest and fairest.
+
+Example event:
+
+Challenge: Winning team and margin
+Prediction format: Team by points
+Tie-break: Total points scored in the match
+Player predictions could be:
+
+Warriors by 8
+Tie-break: 42 total points
+If two people both get “Warriors” right but neither gets the exact margin, the closest tie-break number wins.
+
+This works well for:
+
+Sport	Tie-break idea
+Rugby / football / basketball	Total match points or goals
+Racing	Winning time
+Horse racing	Winning margin
+Cricket	Total runs
+Motorsport	Fastest lap or winning margin
+Golf	Winning score
+This is probably the best default option.
+
+Option 2: “Closest to the target” mini-game
+Yes, you could absolutely add a little game where each player has to hit the space bar to stop a timer as close as possible to a target time.
+
+For example:
+
+Tie-break game: Stop the timer as close as possible to 5.000 seconds.
+The player clicks Start, then presses space when they think 5 seconds has passed.
+
+The app records:
+
+Adam: 5.183 seconds
+Brett: 4.941 seconds
+Wolf: 5.012 seconds
+Closest to 5.000 seconds wins the tie-break.
+
+That would be fun, but I’d use it carefully because it changes the game from “sports prediction” into “reaction/timing skill”. Still, for a social weekly game, it could be brilliant.
+
+My recommended design
+I’d add this to each event:
+
+Tie-break type:
+[ None ]
+[ Closest numeric answer ]
+[ Space bar timing game ]
+Then, depending on the selection, show extra fields.
+
+For closest numeric answer:
+
+Tie-break question:
+Example: Total points scored in the match
+
+Tie-break format:
+Example: Number only, e.g. 47
+For space bar timing game:
+
+Target time:
+Example: 5.000 seconds
+Each player then enters their normal prediction and tie-break answer together.
+
+Example prediction cell:
+
+Prediction:
+Warriors by 8
+
+Tie-break:
+42
+Or for the mini-game:
+
+Prediction:
+Warriors by 8
+
+Tie-break game:
+[ Start timer ]
+Press SPACE as close as possible to 5.000 seconds
+Your result: 5.183 seconds
+How winner selection should work
+I would not automatically choose the winner yet. Keep the event owner in control.
+
+But when selecting the winner, show the tie-break information beside each prediction:
+
+Adam: Warriors by 8 | Tie-break: 42
+Brett: Warriors by 7 | Tie-break: 44
+Wolf: Warriors by 8 | Tie-break: 5.012 seconds
+That lets the event owner make the final call.
+
+Best practical version for now
+I’d start with this:
+
+Add optional Tie-break question to the event form.
+
+Add optional Tie-break format to the event form.
+
+Add a Tie-break answer box under each prediction.
+
+Show tie-break answers only after Friday 1700, just like predictions.
+
+Include tie-break answers in the winner dropdown.
+
+Then add the space-bar game afterwards, once the simple tie-break flow is working.
+
+The space-bar game is absolutely doable, but the numeric tie-break will be cleaner, fairer, and much easier to get working first.
+
+
+image(63).png
+Well its odder than that - I need a tie break for my tie break.  So I added a tie break into my prediction (this was my mistake, I should have added a tie break section then we wouldn't have had this issue).  I definitely want to add a tie break section added, the default should be set to none.  But there are also occasions when we have a tie break for sportsmaster winner of the week and I think that the mini game would be perfect for that too.  Though I want the target time to be a random whole number of seconds between 5 and 12
+
+Thought for 2m 2s
+Done, Adam. I’ve created a new version with both tie-break ideas added.
+
+I used your latest Sports Master version as the base, including the actual result and permission-fix work. 
+
+
+Added to each event
+There is now an Event tie-break section on the event form, defaulting to:
+
+None
+The event owner can choose:
+
+None
+Tie-break answer
+Closest numeric answer
+When enabled, the event owner adds:
+
+Tie-break question
+Tie-break format
+Players then get a separate tie-break answer box under their normal prediction. The tie-break answer stays hidden until the grand reveal, just like the main prediction.
+
+The winner dropdown also shows the tie-break answer, for example:
+
+Adam: Morocco 2:1 | TB: HT 1:0
+Angus: Morocco 2:1 | TB: HT 1:1
+Brett: Morocco 2:1 | TB: HT 0:1
+Added Sports Master weekly tie-break game
+I’ve also added a separate Sports Master weekly tie-break game card.
+
+For each selected week, the app creates a random whole-number target between:
+
+5 and 12 seconds
+Players click Start tie-break, then press SPACE or click Stop when they think the target time has passed.
+
+The timer is hidden while they play, so it becomes a judgement/counting game rather than a reaction-time game.
+
+Each player gets one attempt per selected week.
+
+Download
+
+Upload it to GitHub as your new index.html.
+
+One small heads-up: because the mini-game saves to a new Firestore subcollection, your Firebase rules may need to allow each user to write their own tie-break attempt under weeks/{weekId}/sportsmasterTieBreak/{userId}.
+
 <!doctype html>
 <html lang="en-NZ">
 <head>
@@ -270,6 +560,34 @@
       line-height: 1.35;
     }
 
+    .tie-break-options {
+      border: 1px solid var(--line);
+      border-radius: 0.85rem;
+      padding: 1rem;
+      background: #f8fafc;
+    }
+
+    .mini-game-panel {
+      display: grid;
+      gap: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .mini-game-target {
+      font-size: 1.25rem;
+      font-weight: 900;
+    }
+
+    .mini-game-result {
+      font-weight: 800;
+    }
+
+    .result-cell {
+      display: grid;
+      gap: 0.5rem;
+      min-width: 190px;
+    }
+
     .score-pill {
       display: inline-block;
       background: #ecfdf5;
@@ -426,6 +744,30 @@
           <span class="format-hint">This appears in each player’s prediction box as the suggested format, helping everyone answer consistently while predictions remain hidden.</span>
         </label>
 
+        <div class="grid tie-break-options">
+          <label>
+            Event tie-break
+            <select id="tieBreakType">
+              <option value="none">None</option>
+              <option value="text">Tie-break answer</option>
+              <option value="numeric">Closest numeric answer</option>
+            </select>
+            <span class="format-hint">Use this only when the main prediction may not produce a clear winner.</span>
+          </label>
+
+          <div id="tieBreakDetails" class="grid hidden">
+            <label>
+              Tie-break question
+              <input id="tieBreakQuestion" placeholder="Example: Half-time score, total match points, winning time..." />
+            </label>
+
+            <label>
+              Tie-break format
+              <input id="tieBreakFormat" placeholder="Example: HT 1:0, number only, 02:35..." />
+            </label>
+          </div>
+        </div>
+
         <button id="saveEventButton" type="submit">Save my event</button>
         <div id="eventMessage"></div>
       </form>
@@ -449,7 +791,7 @@
       </div>
 
       <div id="historyNotice" class="notice warn hidden">
-        You are viewing a previous week. Event entries and predictions are read-only, but event owners can still select missing winners.
+        You are viewing a previous week. Event entries and predictions are read-only, but event owners can still select missing winners and add actual results.
       </div>
 
       <div id="emptyGameNotice" class="notice hidden">
@@ -461,6 +803,27 @@
           <thead id="tableHead"></thead>
           <tbody id="tableBody"></tbody>
         </table>
+      </div>
+    </section>
+
+    <section id="sportsmasterTieBreakCard" class="card hidden">
+      <div class="toolbar">
+        <div>
+          <h2>Sports Master weekly tie-break game</h2>
+          <p class="muted">Use this when the weekly winner is tied. The target is a random whole number of seconds between 5 and 12 for the selected week.</p>
+        </div>
+        <span id="miniGameStatus" class="status">Ready</span>
+      </div>
+
+      <div class="mini-game-panel">
+        <div id="miniGameTarget" class="mini-game-target">Target: loading...</div>
+        <div class="muted">Click start, then press SPACE or click stop when you think the target time has passed. The timer is hidden while you play.</div>
+        <div>
+          <button id="miniGameStartButton" type="button">Start tie-break</button>
+          <button id="miniGameStopButton" type="button" class="secondary" disabled>Stop</button>
+        </div>
+        <div id="miniGameMessage" class="mini-game-result"></div>
+        <div id="miniGameLeaderboard"></div>
       </div>
     </section>
 
@@ -479,11 +842,14 @@
         <li>All events and predictions must be entered before 1700 New Zealand Time on Friday.</li>
         <li>No new entries, edits or predictions are allowed during the event window.</li>
         <li>Each challenge must have a clear result so that one winner can be chosen.</li>
+        <li>After Friday 1700 New Zealand Time, event owners can record the actual result and select the winning prediction.</li>
         <li>Each event owner must specify a prediction format so players know how to answer.</li>
+        <li>Each event owner may add an optional tie-break question. The default is none.</li>
         <li>Identical predictions are not allowed for the same event.</li>
         <li>The winner of each event category gets one point. Everyone else gets zero for that category.</li>
         <li>Players may withdraw from the weekly game if they choose.</li>
-        <li>Previous weeks remain available in the week selector. Event entries and predictions are read-only, but event owners can still select missing winners.</li>
+        <li>Previous weeks remain available in the week selector. Event entries and predictions are read-only, but event owners can still select missing winners and add actual results.</li>
+        <li>The Sports Master weekly tie-break game can be used if the overall weekly points table is tied.</li>
       </ol>
     </section>
   </main>
@@ -510,8 +876,7 @@
       getDocs,
       onSnapshot,
       serverTimestamp,
-      runTransaction,
-      increment
+      runTransaction
     } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -535,6 +900,10 @@
     let weeks = [];
     let events = [];
     let predictionsByEvent = {};
+    let sportsmasterTieBreakAttempts = [];
+    let sportsmasterTieBreakTarget = null;
+    let miniGameRunning = false;
+    let miniGameStartedAt = null;
     let allTimeScores = new Map();
     let selectedWeekId = null;
     let eventFormDirty = false;
@@ -543,6 +912,7 @@
     let unsubscribeWeeks = null;
     let unsubscribeEvents = null;
     let unsubscribePredictions = [];
+    let unsubscribeSportsmasterTieBreak = null;
 
     const els = {
       weekSummary: document.querySelector("#weekSummary"),
@@ -553,6 +923,7 @@
       playerCard: document.querySelector("#playerCard"),
       eventCard: document.querySelector("#eventCard"),
       gameCard: document.querySelector("#gameCard"),
+      sportsmasterTieBreakCard: document.querySelector("#sportsmasterTieBreakCard"),
       scoreCard: document.querySelector("#scoreCard"),
 
       registerForm: document.querySelector("#registerForm"),
@@ -578,6 +949,10 @@
       eventStartAt: document.querySelector("#eventStartAt"),
       challengeDescription: document.querySelector("#challengeDescription"),
       predictionFormat: document.querySelector("#predictionFormat"),
+      tieBreakType: document.querySelector("#tieBreakType"),
+      tieBreakDetails: document.querySelector("#tieBreakDetails"),
+      tieBreakQuestion: document.querySelector("#tieBreakQuestion"),
+      tieBreakFormat: document.querySelector("#tieBreakFormat"),
       saveEventButton: document.querySelector("#saveEventButton"),
       eventMessage: document.querySelector("#eventMessage"),
 
@@ -589,6 +964,12 @@
       emptyGameNotice: document.querySelector("#emptyGameNotice"),
       tableHead: document.querySelector("#tableHead"),
       tableBody: document.querySelector("#tableBody"),
+      miniGameStatus: document.querySelector("#miniGameStatus"),
+      miniGameTarget: document.querySelector("#miniGameTarget"),
+      miniGameStartButton: document.querySelector("#miniGameStartButton"),
+      miniGameStopButton: document.querySelector("#miniGameStopButton"),
+      miniGameMessage: document.querySelector("#miniGameMessage"),
+      miniGameLeaderboard: document.querySelector("#miniGameLeaderboard"),
       leaderboard: document.querySelector("#leaderboard")
     };
 
@@ -719,6 +1100,31 @@
       return String(value || "").trim().toLowerCase();
     }
 
+    function eventHasTieBreak(event) {
+      return event && event.tieBreakType && event.tieBreakType !== "none";
+    }
+
+    function randomWholeSeconds(min, max) {
+      const range = max - min + 1;
+      if (window.crypto && crypto.getRandomValues) {
+        const values = new Uint32Array(1);
+        crypto.getRandomValues(values);
+        return min + (values[0] % range);
+      }
+      return min + Math.floor(Math.random() * range);
+    }
+
+    function toggleTieBreakDetails() {
+      const enabled = els.tieBreakType.value !== "none";
+      els.tieBreakDetails.classList.toggle("hidden", !enabled);
+      els.tieBreakQuestion.required = enabled;
+      els.tieBreakFormat.required = enabled;
+      if (!enabled) {
+        els.tieBreakQuestion.value = "";
+        els.tieBreakFormat.value = "";
+      }
+    }
+
     function updateWeekDisplay() {
       const info = getCurrentWeekInfo();
       const locked = isLockedNow();
@@ -732,10 +1138,10 @@
       `;
 
       els.lockMessage.textContent = readOnly
-        ? `Viewing week ${selectedWeekId}. Event entries and predictions are read-only. Missing winners can still be selected by the event owner.`
+        ? `Viewing week ${selectedWeekId}. Event entries and predictions are read-only. Missing winners and actual results can still be saved by the event owner.`
         : locked
-          ? "Entries are locked. Winner selection is now open for event owners."
-          : `Entries are open until ${info.lockLabel}. Winner selection opens after Friday at 1700 New Zealand Time.`;
+          ? "Entries are locked. Winner selection and actual result entry are now open for event owners."
+          : `Entries are open until ${info.lockLabel}. Winner selection and actual result entry open after Friday at 1700 New Zealand Time.`;
 
       els.statusBadge.textContent = readOnly ? "Read-only" : locked ? "Locked" : "Open";
       els.statusBadge.className = readOnly ? "status complete" : locked ? "status locked" : "status";
@@ -745,10 +1151,15 @@
 
     async function ensureWeekDocument() {
       const info = getCurrentWeekInfo();
-      await setDoc(doc(db, "weeks", info.weekId), {
+      const weekRef = doc(db, "weeks", info.weekId);
+      const snap = await getDoc(weekRef);
+      const existingTarget = snap.exists() ? snap.data().sportsmasterTieBreakTarget : null;
+
+      await setDoc(weekRef, {
         weekId: info.weekId,
         lockLabel: info.lockLabel,
         eventWindowLabel: info.windowLabel,
+        sportsmasterTieBreakTarget: existingTarget || randomWholeSeconds(5, 12),
         updatedAt: serverTimestamp()
       }, { merge: true });
     }
@@ -796,9 +1207,14 @@
     function startEventsListener() {
       if (!selectedWeekId) selectedWeekId = currentWeekId();
       if (unsubscribeEvents) unsubscribeEvents();
+      if (unsubscribeSportsmasterTieBreak) unsubscribeSportsmasterTieBreak();
       for (const unsub of unsubscribePredictions) unsub();
       unsubscribePredictions = [];
       predictionsByEvent = {};
+      sportsmasterTieBreakAttempts = [];
+      sportsmasterTieBreakTarget = null;
+      miniGameRunning = false;
+      miniGameStartedAt = null;
 
       unsubscribeEvents = onSnapshot(collection(db, "weeks", selectedWeekId, "events"), snapshot => {
         events = snapshot.docs
@@ -807,6 +1223,41 @@
         listenToPredictions();
         render();
       });
+
+      startSportsmasterTieBreakListener();
+    }
+
+    async function ensureSelectedWeekTieBreakTarget() {
+      if (!selectedWeekId) return;
+      const weekRef = doc(db, "weeks", selectedWeekId);
+      const snap = await getDoc(weekRef);
+      const existingTarget = snap.exists() ? snap.data().sportsmasterTieBreakTarget : null;
+      if (existingTarget) {
+        sportsmasterTieBreakTarget = existingTarget;
+        return;
+      }
+
+      sportsmasterTieBreakTarget = randomWholeSeconds(5, 12);
+      await setDoc(weekRef, {
+        weekId: selectedWeekId,
+        sportsmasterTieBreakTarget,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    async function startSportsmasterTieBreakListener() {
+      if (!selectedWeekId) return;
+      if (unsubscribeSportsmasterTieBreak) unsubscribeSportsmasterTieBreak();
+
+      await ensureSelectedWeekTieBreakTarget();
+
+      unsubscribeSportsmasterTieBreak = onSnapshot(
+        collection(db, "weeks", selectedWeekId, "sportsmasterTieBreak"),
+        snapshot => {
+          sportsmasterTieBreakAttempts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderSportsmasterTieBreak();
+        }
+      );
     }
 
     function listenToPredictions() {
@@ -833,11 +1284,13 @@
       if (unsubscribePlayers) unsubscribePlayers();
       if (unsubscribeWeeks) unsubscribeWeeks();
       if (unsubscribeEvents) unsubscribeEvents();
+      if (unsubscribeSportsmasterTieBreak) unsubscribeSportsmasterTieBreak();
       for (const unsub of unsubscribePredictions) unsub();
 
       unsubscribePlayers = null;
       unsubscribeWeeks = null;
       unsubscribeEvents = null;
+      unsubscribeSportsmasterTieBreak = null;
       unsubscribePredictions = [];
     }
 
@@ -878,13 +1331,16 @@
       updateWeekDisplay();
     }
 
-    async function savePrediction(eventId, predictionValue) {
+    async function savePrediction(eventId, predictionValue, tieBreakAnswerValue = "") {
       if (!currentUser || !currentPlayer) return;
       if (isReadOnlyView()) throw new Error("Previous weeks are read-only.");
       if (isLockedNow()) throw new Error("Entries are locked for this week.");
 
+      const event = events.find(item => item.id === eventId);
       const clean = String(predictionValue || "").trim();
+      const cleanTieBreak = String(tieBreakAnswerValue || "").trim();
       if (!clean) throw new Error("Please enter a prediction.");
+      if (eventHasTieBreak(event) && !cleanTieBreak) throw new Error("Please enter a tie-break answer.");
 
       const eventRef = doc(db, "weeks", selectedWeekId, "events", eventId);
       const predictionsRef = collection(eventRef, "predictions");
@@ -905,6 +1361,7 @@
           playerId: currentUser.uid,
           playerNickname: currentPlayer.nickname,
           prediction: clean,
+          tieBreakAnswer: cleanTieBreak,
           updatedAt: serverTimestamp()
         }, { merge: true });
       });
@@ -925,8 +1382,19 @@
       if (!prediction) throw new Error("Winner prediction was not found.");
 
       const eventRef = doc(db, "weeks", selectedWeekId, "events", eventId);
-      const playerRef = doc(db, "players", winnerPlayerId);
 
+      /*
+        Important permission fix:
+        Do not update players/{winnerPlayerId} here.
+
+        Normal players usually only have permission to edit their own player document.
+        The old version tried to increment lifetimePoints on the winner's player document.
+        That meant selecting yourself worked, but selecting another player could fail with
+        "insufficient permissions".
+
+        The leaderboard already calculates totals from the completed event documents,
+        so writing the winner to the event document is enough.
+      */
       await runTransaction(db, async transaction => {
         const eventSnap = await transaction.get(eventRef);
         if (!eventSnap.exists()) throw new Error("Event was not found.");
@@ -935,16 +1403,32 @@
         transaction.set(eventRef, {
           winnerPlayerId,
           winningPrediction: prediction.prediction,
+          winningTieBreakAnswer: prediction.tieBreakAnswer || "",
           completedAt: serverTimestamp()
-        }, { merge: true });
-
-        transaction.set(playerRef, {
-          lifetimePoints: increment(1),
-          updatedAt: serverTimestamp()
         }, { merge: true });
       });
 
       await refreshAllTimeScores();
+    }
+
+    async function saveActualResult(eventId, actualResultValue) {
+      if (!currentUser) return;
+      if (!winnerSelectionIsOpen()) {
+        throw new Error("Actual result entry opens after Friday at 1700 New Zealand Time.");
+      }
+
+      const event = events.find(item => item.id === eventId);
+      if (!event || event.ownerPlayerId !== currentUser.uid) {
+        throw new Error("Only the player who created this event can save the actual result.");
+      }
+
+      const cleanResult = String(actualResultValue || "").trim();
+      if (!cleanResult) throw new Error("Please enter the actual result.");
+
+      await setDoc(doc(db, "weeks", selectedWeekId, "events", eventId), {
+        actualResult: cleanResult,
+        resultUpdatedAt: serverTimestamp()
+      }, { merge: true });
     }
 
     function render() {
@@ -966,12 +1450,14 @@
 
       els.eventCard.classList.toggle("hidden", currentPlayer.active === false || readOnly);
       els.gameCard.classList.remove("hidden");
+      els.sportsmasterTieBreakCard.classList.remove("hidden");
       els.scoreCard.classList.remove("hidden");
       els.withdrawButton.disabled = readOnly;
 
       renderWeekSelector();
       renderEventForm();
       renderTable(locked, readOnly);
+      renderSportsmasterTieBreak();
       renderLeaderboard();
     }
 
@@ -996,7 +1482,7 @@
       const myEvent = events.find(event => event.ownerPlayerId === currentUser.uid);
       const formHasFocus = els.eventForm.contains(document.activeElement);
       const formKey = myEvent
-        ? `${selectedWeekId}|${myEvent.id}|${myEvent.updatedAt?.seconds || ""}|${myEvent.eventName || ""}|${myEvent.predictionFormat || ""}`
+        ? `${selectedWeekId}|${myEvent.id}|${myEvent.updatedAt?.seconds || ""}|${myEvent.eventName || ""}|${myEvent.predictionFormat || ""}|${myEvent.tieBreakType || "none"}|${myEvent.tieBreakQuestion || ""}|${myEvent.tieBreakFormat || ""}`
         : `${selectedWeekId}|empty`;
 
       /*
@@ -1010,6 +1496,8 @@
 
       if (!myEvent) {
         els.eventForm.reset();
+        els.tieBreakType.value = "none";
+        toggleTieBreakDetails();
         eventFormLoadedKey = formKey;
         return;
       }
@@ -1077,11 +1565,25 @@
 
       rows.push(`
         <tr>
+          <td>Tie-break</td>
+          ${events.map(event => renderTieBreakInfoCell(event)).join("")}
+        </tr>
+      `);
+
+      rows.push(`
+        <tr>
+          <td>Actual result</td>
+          ${events.map(event => renderActualResultCell(event)).join("")}
+        </tr>
+      `);
+
+      rows.push(`
+        <tr>
           <td>Winner</td>
           ${events.map(event => `
             <td>
               ${event.winnerPlayerId
-                ? `<span class="score-pill">${escapeHtml(getPlayerName(event.winnerPlayerId))}: ${escapeHtml(event.winningPrediction || "")}</span>`
+                ? `<span class="score-pill">${escapeHtml(getPlayerName(event.winnerPlayerId))}: ${escapeHtml(event.winningPrediction || "")}${event.winningTieBreakAnswer ? ` | TB: ${escapeHtml(event.winningTieBreakAnswer)}` : ""}</span>`
                 : renderWinnerSelect(event, readOnly)}
             </td>
           `).join("")}
@@ -1100,65 +1602,131 @@
       els.tableBody.innerHTML = rows.join("");
       attachPredictionHandlers();
       attachWinnerHandlers();
+      attachResultHandlers();
+    }
+
+    function renderTieBreakInfoCell(event) {
+      if (!eventHasTieBreak(event)) {
+        return `<td><span class="muted">None</span></td>`;
+      }
+
+      const typeLabel = event.tieBreakType === "numeric" ? "Closest numeric answer" : "Tie-break answer";
+      return `
+        <td>
+          <strong>${escapeHtml(typeLabel)}</strong><br />
+          ${escapeHtml(event.tieBreakQuestion || "")}
+          ${event.tieBreakFormat ? `<span class="format-hint">Format: ${escapeHtml(event.tieBreakFormat)}</span>` : ""}
+        </td>
+      `;
     }
 
     function renderPredictionCell(event, player, locked, readOnly) {
-     const predictions = predictionsByEvent[event.id] || [];
-     const existing = predictions.find(item => item.playerId === player.id);
-     const isMe = currentUser && player.id === currentUser.uid;
-     const winnerClass = event.winnerPlayerId === player.id ? "score-pill" : "";
-     const revealed = predictionsAreRevealed() || readOnly || Boolean(event.winnerPlayerId);
+      const predictions = predictionsByEvent[event.id] || [];
+      const existing = predictions.find(item => item.playerId === player.id);
+      const isMe = currentUser && player.id === currentUser.uid;
+      const winnerClass = event.winnerPlayerId === player.id ? "score-pill" : "";
+      const revealed = predictionsAreRevealed() || readOnly || Boolean(event.winnerPlayerId);
+      const tieBreakEnabled = eventHasTieBreak(event);
 
-     if (!isMe) {
-       let displayValue = "";
+      function formatVisiblePrediction(prediction) {
+        if (!prediction) return "";
+        const tieBreakText = tieBreakEnabled && prediction.tieBreakAnswer
+          ? `<span class="format-hint">Tie-break: ${escapeHtml(prediction.tieBreakAnswer)}</span>`
+          : "";
+        return `${escapeHtml(prediction.prediction || "")}${tieBreakText}`;
+      }
 
-       if (existing) {
-         displayValue = revealed
-           ? existing.prediction
-           : "Prediction submitted";
-       }
+      if (!isMe) {
+        let displayValue = "";
 
-       return `
-         <td>
-           <span class="${winnerClass}">
-             ${escapeHtml(displayValue)}
-           </span>
-         </td>
-       `;
-     }
+        if (existing) {
+          displayValue = revealed
+            ? formatVisiblePrediction(existing)
+            : "Prediction submitted";
+        }
 
-     if (readOnly || revealed) {
-       return `
-         <td>
-           <span class="${winnerClass}">
-             ${escapeHtml(existing ? existing.prediction : "")}
-           </span>
-         </td>
-       `;
-     }
+        return `
+          <td>
+            <span class="${winnerClass}">
+              ${displayValue}
+            </span>
+          </td>
+        `;
+      }
 
-     return `
-       <td>
-         <div class="prediction-cell">
-           <input
-             data-event-id="${escapeAttr(event.id)}"
-             class="prediction-input"
-             value="${escapeAttr(existing ? existing.prediction : "")}" 
-             placeholder="${escapeAttr(event.predictionFormat || "Your prediction")}"
-             ${locked ? "disabled" : ""}
-           />
-           ${event.predictionFormat ? `<span class="format-hint">Format: ${escapeHtml(event.predictionFormat)}</span>` : ""}
-           <button
-             class="small save-prediction-button"
-             data-event-id="${escapeAttr(event.id)}"
-             ${locked ? "disabled" : ""}
-           >
-             Save prediction
-           </button>
-         </div>
-       </td>
-     `;
-   }
+      if (readOnly || revealed) {
+        return `
+          <td>
+            <span class="${winnerClass}">
+              ${formatVisiblePrediction(existing)}
+            </span>
+          </td>
+        `;
+      }
+
+      return `
+        <td>
+          <div class="prediction-cell">
+            <input
+              data-event-id="${escapeAttr(event.id)}"
+              class="prediction-input"
+              value="${escapeAttr(existing ? existing.prediction : "")}" 
+              placeholder="${escapeAttr(event.predictionFormat || "Your prediction")}"
+              ${locked ? "disabled" : ""}
+            />
+            ${event.predictionFormat ? `<span class="format-hint">Format: ${escapeHtml(event.predictionFormat)}</span>` : ""}
+            ${tieBreakEnabled ? `
+              <input
+                data-event-id="${escapeAttr(event.id)}"
+                class="tie-break-answer-input"
+                value="${escapeAttr(existing ? existing.tieBreakAnswer || "" : "")}"
+                placeholder="${escapeAttr(event.tieBreakFormat || "Tie-break answer")}"
+                ${locked ? "disabled" : ""}
+              />
+              <span class="format-hint">Tie-break: ${escapeHtml(event.tieBreakQuestion || "")}${event.tieBreakFormat ? ` Format: ${escapeHtml(event.tieBreakFormat)}` : ""}</span>
+            ` : ""}
+            <button
+              class="small save-prediction-button"
+              data-event-id="${escapeAttr(event.id)}"
+              ${locked ? "disabled" : ""}
+            >
+              Save prediction
+            </button>
+          </div>
+        </td>
+      `;
+    }
+
+    function renderActualResultCell(event) {
+      const canEditResult =
+        currentUser &&
+        event.ownerPlayerId === currentUser.uid &&
+        winnerSelectionIsOpen();
+
+      if (!canEditResult) {
+        return `<td>${event.actualResult ? escapeHtml(event.actualResult) : `<span class="muted">Pending</span>`}</td>`;
+      }
+
+      return `
+        <td>
+          <div class="result-cell">
+            <input
+              class="actual-result-input"
+              data-event-id="${escapeAttr(event.id)}"
+              value="${escapeAttr(event.actualResult || "")}"
+              placeholder="Actual result, e.g. Hurricanes 20, Chiefs 12"
+            />
+            <button
+              class="small save-result-button"
+              data-event-id="${escapeAttr(event.id)}"
+              type="button"
+            >
+              Save actual result
+            </button>
+          </div>
+        </td>
+      `;
+    }
 
     function renderWinnerSelect(event, readOnly) {
       if (!currentUser || event.ownerPlayerId !== currentUser.uid) {
@@ -1177,10 +1745,133 @@
           <option value="">Choose winner...</option>
           ${predictions.map(prediction => `
             <option value="${escapeAttr(prediction.playerId)}">
-              ${escapeHtml(prediction.playerNickname || getPlayerName(prediction.playerId))}: ${escapeHtml(prediction.prediction)}
+              ${escapeHtml(prediction.playerNickname || getPlayerName(prediction.playerId))}: ${escapeHtml(prediction.prediction)}${prediction.tieBreakAnswer ? ` | TB: ${escapeHtml(prediction.tieBreakAnswer)}` : ""}
             </option>
           `).join("")}
         </select>
+      `;
+    }
+
+    function getMySportsmasterTieBreakAttempt() {
+      if (!currentUser) return null;
+      return sportsmasterTieBreakAttempts.find(attempt => attempt.playerId === currentUser.uid || attempt.id === currentUser.uid) || null;
+    }
+
+    async function saveSportsmasterTieBreakAttempt(elapsedSeconds) {
+      if (!currentUser || !currentPlayer || !selectedWeekId) return;
+      if (!sportsmasterTieBreakTarget) throw new Error("Tie-break target is not ready yet.");
+
+      const attemptRef = doc(db, "weeks", selectedWeekId, "sportsmasterTieBreak", currentUser.uid);
+      const existing = await getDoc(attemptRef);
+      if (existing.exists()) {
+        throw new Error("You have already played this tie-break for the selected week.");
+      }
+
+      const roundedElapsed = Number(elapsedSeconds.toFixed(3));
+      const differenceSeconds = Number(Math.abs(roundedElapsed - Number(sportsmasterTieBreakTarget)).toFixed(3));
+
+      await setDoc(attemptRef, {
+        playerId: currentUser.uid,
+        playerNickname: currentPlayer.nickname || currentPlayer.fullName,
+        targetSeconds: Number(sportsmasterTieBreakTarget),
+        resultSeconds: roundedElapsed,
+        differenceSeconds,
+        createdAt: serverTimestamp()
+      });
+    }
+
+    function startMiniGame() {
+      if (!currentUser || !currentPlayer) return;
+      if (getMySportsmasterTieBreakAttempt()) {
+        showMessage(els.miniGameMessage, "You have already played this tie-break for the selected week.", "error");
+        return;
+      }
+
+      miniGameRunning = true;
+      miniGameStartedAt = performance.now();
+      els.miniGameStartButton.disabled = true;
+      els.miniGameStopButton.disabled = false;
+      els.miniGameStatus.textContent = "Running";
+      els.miniGameStatus.className = "status locked";
+      showMessage(els.miniGameMessage, "Timer running. Press SPACE or click Stop.", "");
+    }
+
+    async function stopMiniGame() {
+      if (!miniGameRunning || !miniGameStartedAt) return;
+
+      const elapsedSeconds = (performance.now() - miniGameStartedAt) / 1000;
+      miniGameRunning = false;
+      miniGameStartedAt = null;
+      els.miniGameStopButton.disabled = true;
+
+      try {
+        await saveSportsmasterTieBreakAttempt(elapsedSeconds);
+        showMessage(
+          els.miniGameMessage,
+          `Saved: ${elapsedSeconds.toFixed(3)} seconds. Target was ${sportsmasterTieBreakTarget} seconds.`,
+          "success"
+        );
+      } catch (error) {
+        showMessage(els.miniGameMessage, error.message, "error");
+      } finally {
+        renderSportsmasterTieBreak();
+      }
+    }
+
+    function renderSportsmasterTieBreak() {
+      if (!currentUser || !currentPlayer || !els.sportsmasterTieBreakCard) return;
+
+      const myAttempt = getMySportsmasterTieBreakAttempt();
+      const ordered = [...sportsmasterTieBreakAttempts].sort((a, b) =>
+        Number(a.differenceSeconds || 999) - Number(b.differenceSeconds || 999) ||
+        String(a.playerNickname || "").localeCompare(String(b.playerNickname || ""))
+      );
+
+      els.miniGameTarget.textContent = sportsmasterTieBreakTarget
+        ? `Target: ${sportsmasterTieBreakTarget} seconds`
+        : "Target: loading...";
+
+      if (!miniGameRunning) {
+        els.miniGameStatus.textContent = myAttempt ? "Played" : "Ready";
+        els.miniGameStatus.className = myAttempt ? "status complete" : "status";
+        els.miniGameStartButton.disabled = Boolean(myAttempt) || !sportsmasterTieBreakTarget;
+        els.miniGameStopButton.disabled = true;
+      }
+
+      if (myAttempt && !miniGameRunning) {
+        showMessage(
+          els.miniGameMessage,
+          `Your result: ${Number(myAttempt.resultSeconds).toFixed(3)} seconds. Difference: ${Number(myAttempt.differenceSeconds).toFixed(3)} seconds.`,
+          "success"
+        );
+      }
+
+      if (ordered.length === 0) {
+        els.miniGameLeaderboard.innerHTML = `<p class="muted">No tie-break attempts have been recorded for this week yet.</p>`;
+        return;
+      }
+
+      els.miniGameLeaderboard.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Result</th>
+                <th>Difference</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ordered.map(attempt => `
+                <tr>
+                  <td>${escapeHtml(attempt.playerNickname || getPlayerName(attempt.playerId))}</td>
+                  <td>${Number(attempt.resultSeconds || 0).toFixed(3)}s</td>
+                  <td>${Number(attempt.differenceSeconds || 0).toFixed(3)}s</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
       `;
     }
 
@@ -1249,14 +1940,33 @@
         button.addEventListener("click", async () => {
           const eventId = button.dataset.eventId;
           const input = document.querySelector(`.prediction-input[data-event-id="${cssEscape(eventId)}"]`);
+          const tieBreakInput = document.querySelector(`.tie-break-answer-input[data-event-id="${cssEscape(eventId)}"]`);
 
           try {
             button.disabled = true;
-            await savePrediction(eventId, input.value);
+            await savePrediction(eventId, input.value, tieBreakInput ? tieBreakInput.value : "");
           } catch (error) {
             alert(error.message);
           } finally {
             button.disabled = isLockedNow() || isReadOnlyView();
+          }
+        });
+      });
+    }
+
+    function attachResultHandlers() {
+      document.querySelectorAll(".save-result-button").forEach(button => {
+        button.addEventListener("click", async () => {
+          const eventId = button.dataset.eventId;
+          const input = document.querySelector(`.actual-result-input[data-event-id="${cssEscape(eventId)}"]`);
+
+          try {
+            button.disabled = true;
+            await saveActualResult(eventId, input.value);
+          } catch (error) {
+            alert(error.message);
+          } finally {
+            button.disabled = false;
           }
         });
       });
@@ -1362,6 +2072,21 @@
       eventFormDirty = true;
     });
 
+    els.tieBreakType.addEventListener("change", () => {
+      eventFormDirty = true;
+      toggleTieBreakDetails();
+    });
+
+    els.miniGameStartButton.addEventListener("click", startMiniGame);
+    els.miniGameStopButton.addEventListener("click", stopMiniGame);
+
+    window.addEventListener("keydown", event => {
+      if (event.code === "Space" && miniGameRunning) {
+        event.preventDefault();
+        stopMiniGame();
+      }
+    });
+
     els.weekSelector.addEventListener("change", () => {
       selectedWeekId = els.weekSelector.value;
       eventFormDirty = false;
@@ -1410,6 +2135,16 @@
         return;
       }
 
+      if (els.tieBreakType.value !== "none" && !els.tieBreakQuestion.value.trim()) {
+        showMessage(els.eventMessage, "Please specify the tie-break question or set tie-break to none.", "error");
+        return;
+      }
+
+      if (els.tieBreakType.value !== "none" && !els.tieBreakFormat.value.trim()) {
+        showMessage(els.eventMessage, "Please specify the tie-break format or set tie-break to none.", "error");
+        return;
+      }
+
       try {
         await ensureWeekDocument();
         await setDoc(doc(db, "weeks", selectedWeekId, "events", currentUser.uid), {
@@ -1421,6 +2156,9 @@
           eventStartAt: els.eventStartAt.value,
           challengeDescription: els.challengeDescription.value.trim(),
           predictionFormat: els.predictionFormat.value.trim(),
+          tieBreakType: els.tieBreakType.value,
+          tieBreakQuestion: els.tieBreakType.value === "none" ? "" : els.tieBreakQuestion.value.trim(),
+          tieBreakFormat: els.tieBreakType.value === "none" ? "" : els.tieBreakFormat.value.trim(),
           updatedAt: serverTimestamp()
         }, { merge: true });
 
@@ -1442,6 +2180,7 @@
         els.playerCard.classList.add("hidden");
         els.eventCard.classList.add("hidden");
         els.gameCard.classList.add("hidden");
+        els.sportsmasterTieBreakCard.classList.add("hidden");
         els.scoreCard.classList.add("hidden");
         els.signedInActions.classList.add("hidden");
         selectedWeekId = currentWeekId();
@@ -1463,6 +2202,7 @@
       els.playerCard.classList.remove("hidden");
       els.eventCard.classList.remove("hidden");
       els.gameCard.classList.remove("hidden");
+      els.sportsmasterTieBreakCard.classList.remove("hidden");
       els.scoreCard.classList.remove("hidden");
       els.signedInActions.classList.remove("hidden");
 
@@ -1471,8 +2211,11 @@
     });
 
     selectedWeekId = currentWeekId();
+    toggleTieBreakDetails();
     updateWeekDisplay();
     setInterval(refreshWeekIfNeeded, 30000);
   </script>
 </body>
 </html>
+
+
