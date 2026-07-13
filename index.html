@@ -270,6 +270,29 @@
       line-height: 1.35;
     }
 
+
+    .save-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 0.35rem;
+      font-size: 0.88rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .save-status.saved {
+      color: var(--good);
+    }
+
+    .save-status.unsaved {
+      color: var(--warn);
+    }
+
+    .save-status.empty {
+      color: var(--muted);
+    }
+
     .tie-break-options {
       border: 1px solid var(--line);
       border-radius: 0.85rem;
@@ -1533,6 +1556,12 @@
         ? `${selectedWeekId}|${myEvent.id}|${myEvent.updatedAt?.seconds || ""}|${myEvent.eventName || ""}|${myEvent.predictionFormat || ""}|${myEvent.tieBreakType || "none"}|${myEvent.tieBreakQuestion || ""}|${myEvent.tieBreakFormat || ""}`
         : `${selectedWeekId}|empty`;
 
+      if (myEvent) {
+        els.saveEventButton.textContent = eventFormDirty ? "Update event" : "Update saved event";
+      } else {
+        els.saveEventButton.textContent = eventFormDirty ? "Save new event" : "Save my event";
+      }
+
       /*
         Do not reset the form while the player is typing. Realtime Firestore
         snapshots can call render() repeatedly, and resetting here would wipe
@@ -1546,6 +1575,8 @@
         els.eventForm.reset();
         els.tieBreakType.value = "none";
         toggleTieBreakDetails();
+        els.saveEventButton.textContent = "Save my event";
+        if (!els.eventMessage.classList.contains("error")) showMessage(els.eventMessage, "No event saved yet for this week.", "");
         eventFormLoadedKey = formKey;
         return;
       }
@@ -1560,6 +1591,10 @@
       els.tieBreakQuestion.value = myEvent.tieBreakQuestion || "";
       els.tieBreakFormat.value = myEvent.tieBreakFormat || "";
       toggleTieBreakDetails();
+      els.saveEventButton.textContent = "Update saved event";
+      if (!els.eventMessage.classList.contains("error")) {
+        showMessage(els.eventMessage, "Event saved. Any further changes will update this event.", "success");
+      }
       eventFormLoadedKey = formKey;
     }
 
@@ -1681,12 +1716,25 @@
       const revealed = predictionsAreRevealed() || readOnly || Boolean(event.winnerPlayerId);
       const tieBreakEnabled = eventHasTieBreak(event);
       const key = draftKey(event.id, player.id);
+      const savedPrediction = existing ? existing.prediction || "" : "";
+      const savedTieBreak = existing ? existing.tieBreakAnswer || "" : "";
       const predictionValue = predictionDrafts.has(key)
         ? predictionDrafts.get(key)
-        : existing ? existing.prediction || "" : "";
+        : savedPrediction;
       const tieBreakValue = tieBreakDrafts.has(key)
         ? tieBreakDrafts.get(key)
-        : existing ? existing.tieBreakAnswer || "" : "";
+        : savedTieBreak;
+      const hasPredictionDraft = predictionDrafts.has(key) || tieBreakDrafts.has(key);
+      const predictionHasUnsavedChanges = existing
+        ? predictionValue !== savedPrediction || tieBreakValue !== savedTieBreak
+        : hasPredictionDraft && (Boolean(predictionValue) || Boolean(tieBreakValue));
+      const predictionButtonLabel = existing ? "Update prediction" : "Save prediction";
+      const predictionStatusText = existing
+        ? predictionHasUnsavedChanges ? "Unsaved changes" : "Prediction saved"
+        : predictionHasUnsavedChanges ? "Not saved yet" : "";
+      const predictionStatusClass = existing
+        ? predictionHasUnsavedChanges ? "unsaved" : "saved"
+        : predictionHasUnsavedChanges ? "unsaved" : "empty";
 
       function formatVisiblePrediction(prediction) {
         if (!prediction) return "";
@@ -1750,8 +1798,9 @@
               data-event-id="${escapeAttr(event.id)}"
               ${locked ? "disabled" : ""}
             >
-              Save prediction
+              ${escapeHtml(predictionButtonLabel)}
             </button>
+            <span class="save-status prediction-save-status ${predictionStatusClass}">${escapeHtml(predictionStatusText)}</span>
           </div>
         </td>
       `;
@@ -1768,9 +1817,18 @@
       }
 
       const key = actualResultDraftKey(event.id);
+      const savedActualResult = event.actualResult || "";
       const actualResultValue = actualResultDrafts.has(key)
         ? actualResultDrafts.get(key)
-        : event.actualResult || "";
+        : savedActualResult;
+      const actualResultHasUnsavedChanges = actualResultDrafts.has(key) && actualResultValue !== savedActualResult;
+      const actualResultButtonLabel = savedActualResult ? "Update actual result" : "Save actual result";
+      const actualResultStatusText = savedActualResult
+        ? actualResultHasUnsavedChanges ? "Unsaved changes" : "Actual result saved"
+        : actualResultHasUnsavedChanges || actualResultValue ? "Not saved yet" : "";
+      const actualResultStatusClass = savedActualResult
+        ? actualResultHasUnsavedChanges ? "unsaved" : "saved"
+        : actualResultStatusText ? "unsaved" : "empty";
 
       return `
         <td>
@@ -1786,8 +1844,9 @@
               data-event-id="${escapeAttr(event.id)}"
               type="button"
             >
-              Save actual result
+              ${escapeHtml(actualResultButtonLabel)}
             </button>
+            <span class="save-status actual-result-save-status ${actualResultStatusClass}">${escapeHtml(actualResultStatusText)}</span>
           </div>
         </td>
       `;
@@ -2011,11 +2070,26 @@
       `;
     }
 
+    function markPredictionInputUnsaved(input) {
+      const cell = input.closest(".prediction-cell");
+      if (!cell) return;
+      const status = cell.querySelector(".prediction-save-status");
+      const button = cell.querySelector(".save-prediction-button");
+      if (button && button.textContent.trim() !== "Save prediction") {
+        button.textContent = "Update prediction";
+      }
+      if (status) {
+        status.textContent = button && button.textContent.trim() === "Save prediction" ? "Not saved yet" : "Unsaved changes";
+        status.className = "save-status prediction-save-status unsaved";
+      }
+    }
+
     function attachPredictionHandlers() {
       document.querySelectorAll(".prediction-input").forEach(input => {
         input.addEventListener("input", () => {
           if (input.dataset.eventId) {
             predictionDrafts.set(draftKey(input.dataset.eventId), input.value);
+            markPredictionInputUnsaved(input);
           }
         });
       });
@@ -2024,6 +2098,7 @@
         input.addEventListener("input", () => {
           if (input.dataset.eventId) {
             tieBreakDrafts.set(draftKey(input.dataset.eventId), input.value);
+            markPredictionInputUnsaved(input);
           }
         });
       });
@@ -2039,6 +2114,12 @@
             await savePrediction(eventId, input.value, tieBreakInput ? tieBreakInput.value : "");
             predictionDrafts.delete(draftKey(eventId));
             tieBreakDrafts.delete(draftKey(eventId));
+            button.textContent = "Update prediction";
+            const status = button.parentElement.querySelector(".prediction-save-status");
+            if (status) {
+              status.textContent = "Prediction saved";
+              status.className = "save-status prediction-save-status saved";
+            }
           } catch (error) {
             alert(error.message);
           } finally {
@@ -2053,6 +2134,14 @@
         input.addEventListener("input", () => {
           if (input.dataset.eventId) {
             actualResultDrafts.set(actualResultDraftKey(input.dataset.eventId), input.value);
+            const cell = input.closest(".result-cell");
+            const status = cell ? cell.querySelector(".actual-result-save-status") : null;
+            const button = cell ? cell.querySelector(".save-result-button") : null;
+            if (button && button.textContent.trim() !== "Save actual result") button.textContent = "Update actual result";
+            if (status) {
+              status.textContent = button && button.textContent.trim() === "Save actual result" ? "Not saved yet" : "Unsaved changes";
+              status.className = "save-status actual-result-save-status unsaved";
+            }
           }
         });
       });
@@ -2066,6 +2155,12 @@
             button.disabled = true;
             await saveActualResult(eventId, input.value);
             actualResultDrafts.delete(actualResultDraftKey(eventId));
+            button.textContent = "Update actual result";
+            const status = button.parentElement.querySelector(".actual-result-save-status");
+            if (status) {
+              status.textContent = "Actual result saved";
+              status.className = "save-status actual-result-save-status saved";
+            }
           } catch (error) {
             alert(error.message);
           } finally {
@@ -2173,6 +2268,9 @@
 
     els.eventForm.addEventListener("input", () => {
       eventFormDirty = true;
+      const myEvent = events.find(event => event.ownerPlayerId === (currentUser ? currentUser.uid : ""));
+      els.saveEventButton.textContent = myEvent ? "Update event" : "Save new event";
+      showMessage(els.eventMessage, myEvent ? "Unsaved changes. Press Update event to save them." : "Event not saved yet.", myEvent ? "error" : "");
     });
 
     els.tieBreakType.addEventListener("change", () => {
@@ -2267,7 +2365,8 @@
 
         eventFormDirty = false;
         eventFormLoadedKey = null;
-        showMessage(els.eventMessage, "Event saved.", "success");
+        els.saveEventButton.textContent = "Update saved event";
+        showMessage(els.eventMessage, "Event saved. Any further changes will update this event.", "success");
       } catch (error) {
         showMessage(els.eventMessage, error.message, "error");
       }
