@@ -1,1422 +1,2522 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en-NZ">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FIFA World Cup 2026 — Live Wall Chart</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg0:#07111f;--bg1:#0d1e35;--bg2:#122540;--bg3:#1a3356;
-  --gold:#d4a017;--gold2:#f0c040;--gold-dim:rgba(212,160,23,0.15);
-  --green2:#25a050;--text:#e8eaf0;--text2:#9aa4b8;--text3:#5a6880;
-  --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.06);
-  --radius:8px;--radius-lg:12px;--live:#e03030;
-}
-html,body{background:var(--bg0);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;min-height:100vh;}
-#app{max-width:1400px;margin:0 auto;padding:12px;}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sports Master - Weekly Sports Challenge</title>
 
-/* ── HEADER ── */
-.hdr{text-align:center;padding:14px 0 10px;border-bottom:1px solid rgba(212,160,23,0.35);margin-bottom:12px;}
-.hdr-title{font-size:22px;font-weight:700;color:#fff;letter-spacing:3px;text-transform:uppercase;}
-.hdr-sub{font-size:11px;color:var(--gold);letter-spacing:3px;margin-top:3px;}
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #64748b;
+      --line: #dbe3ef;
+      --brand: #1d4ed8;
+      --brand-dark: #153eaa;
+      --danger: #b91c1c;
+      --good: #047857;
+      --warn: #b45309;
+      --soft-blue: #eff6ff;
+      --shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
 
-/* ── UPDATE BAR ── */
-.update-bar{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:8px 0 10px;border-bottom:1px solid var(--border2);margin-bottom:12px;}
-.update-btn{background:linear-gradient(135deg,rgba(212,160,23,0.25),rgba(212,160,23,0.12));border:1px solid rgba(212,160,23,0.5);color:var(--gold2);padding:8px 20px;font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;}
-.update-btn:hover{background:rgba(212,160,23,0.3);transform:translateY(-1px);}
-.update-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.spin{display:inline-block;animation:spin 1s linear infinite;}
-.api-status{font-size:10px;padding:2px 8px;border-radius:10px;}
-.api-ok{background:rgba(37,160,80,0.15);color:#3ad070;}
-.api-err{background:rgba(200,50,50,0.15);color:#e06060;}
-.api-wait{background:var(--gold-dim);color:var(--gold);}
-.api-fb{background:rgba(255,150,0,0.15);color:#ffaa00;}
-.last-updated{font-size:10px;color:var(--text3);}
-.auto-badge{font-size:9px;background:rgba(37,160,80,0.12);color:#3ad070;border:0.5px solid rgba(37,160,80,0.3);padding:2px 6px;border-radius:8px;display:none;}
-.fb-badge{font-size:9px;background:rgba(255,150,0,0.12);color:#ffaa00;border:0.5px solid rgba(255,150,0,0.3);padding:2px 6px;border-radius:8px;}
-.settings-link{font-size:10px;color:var(--text3);cursor:pointer;text-decoration:underline;background:none;border:none;padding:0;}
-.settings-link:hover{color:var(--text);}
+    * {
+      box-sizing: border-box;
+    }
 
-/* ── NAV ── */
-.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;border-bottom:1px solid var(--border2);padding-bottom:10px;}
-.nav-btn{background:transparent;border:0.5px solid var(--border);color:var(--text2);padding:7px 13px;font-size:12px;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap;}
-.nav-btn:hover{background:var(--bg2);color:var(--text);}
-.nav-btn.active{background:var(--bg3);border-color:var(--gold);color:var(--gold2);}
-.nav-btn.danger{border-color:rgba(180,48,48,0.4);color:rgba(220,80,80,0.7);margin-left:auto;}
-.nav-btn.danger:hover{background:rgba(180,48,48,0.15);}
-.sec{display:none;}.sec.active{display:block;}
-.banner{background:var(--gold-dim);border:0.5px solid rgba(212,160,23,0.3);border-radius:var(--radius);padding:8px 14px;font-size:11px;color:var(--text2);margin-bottom:12px;text-align:center;}
-.banner b{color:var(--gold);}
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+    }
 
-/* ── GROUPS ── */
-.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;}
-.g-card{background:var(--bg1);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
-.g-head{background:var(--bg3);padding:7px 12px;display:flex;align-items:center;gap:10px;}
-.g-letter{font-size:15px;font-weight:700;color:#fff;}
-.g-meta{font-size:10px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.std-table{width:100%;border-collapse:collapse;font-size:11px;}
-.std-table th{color:var(--gold);font-weight:600;padding:5px 8px;text-align:center;border-bottom:0.5px solid var(--border2);}
-.std-table th:first-child{text-align:left;}
-.std-table td{padding:4px 8px;text-align:center;color:var(--text2);}
-.std-table td:first-child{text-align:left;color:var(--text);}
-.std-table tr.q1{background:rgba(29,122,63,0.2);}
-.std-table tr.q2{background:rgba(29,122,63,0.12);}
-.std-table tr.q3{background:rgba(212,160,23,0.08);}
-.rank{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:700;margin-right:4px;}
-.r1{background:var(--gold);color:#07111f;}.r2{background:var(--green2);color:#fff;}
-.r3{background:rgba(212,160,23,0.3);color:var(--gold);}.r4{background:var(--bg3);color:var(--text3);}
-.fix-wrap{border-top:0.5px solid var(--border2);padding:4px 6px;}
+    header {
+      background: #102a43;
+      color: white;
+      padding: 1.4rem 2rem;
+    }
 
-/* ── MATCH CARD ── */
-.mc{background:var(--bg2);border:0.5px solid var(--border2);border-radius:6px;margin-bottom:4px;overflow:hidden;transition:border-color .15s;}
-.mc:last-child{margin-bottom:0;}
-.mc.open{border-color:rgba(212,160,23,0.4);}
-.mc.live-match{border-color:rgba(224,48,48,0.5);background:rgba(224,48,48,0.04);}
-.mc-header{display:flex;align-items:center;gap:4px;padding:5px 7px;cursor:pointer;user-select:none;min-height:34px;}
-.mc-header:hover{background:rgba(255,255,255,0.03);}
-.mc-num{font-size:9px;color:var(--text3);min-width:24px;flex-shrink:0;}
-.mc-teams-row{display:flex;align-items:center;flex:1;gap:4px;min-width:0;}
-.mc-team-name{
-  font-size:11px;
-  color:var(--text);
-  flex:1 1 0;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.mc-team-name.h{text-align:right;}.mc-team-name.a{text-align:left;}
-.mc-team-name.tbd{color:var(--text3);font-style:italic;}
-.mc-team-name.won{color:#5de890 !important;font-weight:700 !important;}
-.mc-scorebox{display:flex;align-items:center;gap:2px;flex-shrink:0;min-width:55px;justify-content:center;}
-.mc-score-val{font-size:13px;font-weight:700;color:#fff;min-width:16px;text-align:center;}
-.mc-score-sep{font-size:10px;color:var(--text3);}
-.mc-score-val.no-score{color:var(--text3);font-weight:400;font-size:10px;}
-.mc-chevron{font-size:10px;color:var(--text3);flex-shrink:0;transition:transform .2s;margin-left:3px;}
-.mc.open .mc-chevron{transform:rotate(180deg);}
-.mc-meta-row{font-size:9px;color:var(--text3);padding:0 7px 3px;display:flex;gap:8px;align-items:center;}
-.mc-score-stack{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  line-height:1.05;
-  min-width:46px;
-}
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+    }
 
-.mc-main-score{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:3px;
-}
+    h1, h2, h3 {
+      margin-top: 0;
+    }
 
-.mc-pens-score{
-  display:block;
-  margin-top:2px;
-  font-size:10px;
-  font-weight:700;
-  color:var(--gold);
-}
+    h1 {
+      margin-bottom: 0.25rem;
+      font-size: clamp(1.7rem, 3vw, 2.6rem);
+    }
 
-.mc-pens-label{
-  display:block;
-  margin-top:1px;
-  font-size:8px;
-  color:var(--gold);
-  text-transform:uppercase;
-  letter-spacing:.5px;
-}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(0.8);}}
-.live-badge{background:var(--live);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;animation:pulse 1.5s ease-in-out infinite;}
-.ft-badge{background:rgba(37,160,80,0.2);color:#3ad070;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;}
-.scorers-display{font-size:9px;padding:0 7px 4px;display:flex;flex-wrap:wrap;gap:3px;line-height:1.5;}
-.scorer-pill{background:rgba(255,255,255,0.06);border-radius:3px;padding:1px 5px;white-space:nowrap;color:var(--text2);}
-.scorer-pill.api-data{color:#5de890;background:rgba(37,160,80,0.08);}
-.mc-expand{display:none;border-top:0.5px solid var(--border2);padding:9px;background:rgba(0,0,0,0.15);}
-.mc.open .mc-expand{display:block;}
-.expand-score-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.expand-team-label{flex:1;font-size:11px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:4px;overflow:hidden;}
-.score-in{width:36px;height:30px;background:rgba(255,255,255,0.06);border:0.5px solid var(--border);border-radius:4px;color:#fff;font-size:15px;font-weight:700;text-align:center;outline:none;padding:0;-moz-appearance:textfield;flex-shrink:0;}
-.score-in::-webkit-inner-spin-button,.score-in::-webkit-outer-spin-button{-webkit-appearance:none;}
-.score-in:focus{border-color:var(--gold);}
-.score-in[readonly]{background:rgba(37,160,80,0.08);border-color:rgba(37,160,80,0.25);cursor:default;}
-.score-dash{font-size:14px;color:var(--text3);flex-shrink:0;}
-.api-source-note{font-size:9px;color:#3ad070;text-align:center;margin-bottom:6px;padding:2px 6px;background:rgba(37,160,80,0.08);border-radius:4px;}
-.scorers-section{display:flex;gap:8px;}
-.scorers-col{flex:1;min-width:0;}
-.scorers-col-label{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
-.scorer-row{display:flex;gap:4px;align-items:center;margin-bottom:3px;}
-.sn-in{flex:1;min-width:0;background:var(--bg0);border:0.5px solid var(--border2);color:var(--text);padding:3px 6px;font-size:11px;border-radius:4px;outline:none;}
-.sn-in:focus{border-color:var(--gold);}
-.sn-in::placeholder{color:var(--text3);}
-.sn-in[readonly]{background:rgba(37,160,80,0.06);border-color:rgba(37,160,80,0.2);color:#5de890;}
-.sm-in{width:36px;background:var(--bg0);border:0.5px solid var(--border2);color:var(--text);padding:3px 4px;font-size:11px;border-radius:4px;outline:none;text-align:center;-moz-appearance:textfield;flex-shrink:0;}
-.sm-in::-webkit-inner-spin-button,.sm-in::-webkit-outer-spin-button{-webkit-appearance:none;}
-.sm-in[readonly]{background:rgba(37,160,80,0.06);border-color:rgba(37,160,80,0.2);color:#5de890;}
-.scorer-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 2px;flex-shrink:0;}
-.scorer-del:hover{color:#e05050;}
-.add-scorer{background:none;border:0.5px dashed var(--border);color:var(--text3);font-size:10px;padding:2px 6px;border-radius:4px;cursor:pointer;width:100%;margin-top:2px;transition:all .1s;}
-.add-scorer:hover{border-color:var(--gold);color:var(--gold);}
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
 
-/* ── THIRDS ── */
-.thirds-panel{margin-top:12px;background:var(--bg1);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:10px 12px;}
-.thirds-title{color:var(--gold);font-size:11px;letter-spacing:1px;font-weight:600;margin-bottom:8px;}
-.thirds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:5px;}
-.third-slot{background:var(--bg2);border:0.5px solid var(--border2);border-radius:6px;padding:5px 7px;text-align:center;}
-.third-slot.qual{background:var(--gold-dim);border-color:rgba(212,160,23,0.3);}
-.third-name{font-size:10px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.third-pts{font-size:9px;color:var(--gold);}
+    .card {
+      background: var(--panel);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.25rem;
+    }
 
-/* ── KO ── */
-.ko-stage-label{color:var(--gold);font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600;text-align:center;margin:14px 0 8px;}
-.ko-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-  gap:10px;
-  margin-bottom:8px;
-}
-.ko-match-wrap{background:var(--bg1);border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
-.ko-match-wrap.decided{border-color:rgba(29,122,63,0.4);}
-.ko-match-wrap .mc{background:transparent;border:none;border-radius:0;margin-bottom:0;}
-.ko-match-wrap .mc-header{padding:5px 8px;}
-.ko-match-wrap .mc:first-child{border-bottom:0.5px solid var(--border2);}
-.ko-match-meta-bar{font-size:9px;color:var(--text3);background:var(--bg2);text-align:center;padding:3px 6px;}
-.champion-banner{text-align:center;margin-top:14px;padding:14px;background:var(--gold-dim);border:0.5px solid rgba(212,160,23,0.4);border-radius:var(--radius-lg);color:var(--gold2);font-size:16px;font-weight:700;}
-.final-wrap{max-width:380px;margin:0 auto;}
+    .grid {
+      display: grid;
+      gap: 1rem;
+    }
 
-/* ── SCHEDULE ── */
-.sch-controls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center;}
-.sch-pills{display:flex;flex-wrap:wrap;gap:4px;}
-.pill{background:transparent;border:0.5px solid var(--border);color:var(--text2);padding:4px 11px;font-size:11px;border-radius:12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
-.pill.active,.pill:hover{background:var(--bg3);border-color:var(--gold);color:var(--text);}
-.sch-search{background:var(--bg2);border:0.5px solid var(--border);color:var(--text);padding:5px 12px;font-size:11px;border-radius:12px;outline:none;width:160px;}
-.sch-search:focus{border-color:var(--gold);}
-.sch-search::placeholder{color:var(--text3);}
-.sch-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
-.sch-stat{background:var(--bg2);border:0.5px solid var(--border2);border-radius:5px;padding:3px 9px;font-size:10px;color:var(--text3);}
-.sch-stat b{color:var(--text);}
-.day-block{margin-bottom:12px;}
-.day-hdr{background:var(--bg2);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--gold);font-weight:600;margin-bottom:5px;}
-.sch-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px;}
-.sch-cards .mc{background:var(--bg1);border:0.5px solid var(--border);border-radius:var(--radius);border-left-width:2px;margin-bottom:0;}
-.sch-cards .mc.gs{border-left-color:rgba(37,160,80,0.6);}
-.sch-cards .mc.r32{border-left-color:rgba(46,127,208,0.6);}
-.sch-cards .mc.r16{border-left-color:rgba(130,80,210,0.6);}
-.sch-cards .mc.qf{border-left-color:rgba(210,128,16,0.6);}
-.sch-cards .mc.sf{border-left-color:rgba(200,60,60,0.6);}
-.sch-cards .mc.final{border-left-color:rgba(212,160,23,1);border-left-width:3px;}
-.sc-badge{font-size:9px;padding:1px 5px;border-radius:6px;font-weight:600;flex-shrink:0;}
-.b-gs{background:rgba(37,160,80,0.15);color:#3ad070;}
-.b-r32{background:rgba(46,127,208,0.15);color:#5090d8;}
-.b-r16{background:rgba(130,80,210,0.15);color:#a070e0;}
-.b-qf{background:rgba(210,128,16,0.15);color:#d08020;}
-.b-sf{background:rgba(200,60,60,0.15);color:#e06060;}
-.b-3p{background:rgba(120,120,120,0.12);color:#909090;}
-.b-final{background:rgba(212,160,23,0.2);color:var(--gold2);}
-.no-results{text-align:center;padding:40px;color:var(--text3);}
-.flag{width:15px;height:11px;object-fit:cover;border-radius:1px;vertical-align:middle;margin-right:3px;flex-shrink:0;}
+    .two {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
 
-/* ── TOAST ── */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-size:12px;color:var(--text);z-index:999;transition:transform .3s;white-space:nowrap;pointer-events:none;}
-.toast.show{transform:translateX(-50%) translateY(0);}
-.toast.ok{border-color:rgba(37,160,80,0.5);color:#5de890;}
-.toast.err{border-color:rgba(200,50,50,0.5);color:#e06060;}
-</style>
+    label {
+      display: grid;
+      gap: 0.35rem;
+      font-weight: 700;
+    }
+
+    input,
+    textarea,
+    select,
+    button {
+      font: inherit;
+    }
+
+    input,
+    textarea,
+    select {
+      border: 1px solid var(--line);
+      border-radius: 0.65rem;
+      padding: 0.75rem;
+      width: 100%;
+      background: white;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    button {
+      border: 0;
+      border-radius: 0.65rem;
+      padding: 0.75rem 1rem;
+      background: var(--brand);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--brand-dark);
+    }
+
+    button.secondary {
+      background: #475569;
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    button.small {
+      padding: 0.45rem 0.65rem;
+      font-size: 0.9rem;
+    }
+
+    button:disabled,
+    input:disabled,
+    textarea:disabled,
+    select:disabled {
+      opacity: 0.58;
+      cursor: not-allowed;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      font-weight: 800;
+      background: var(--soft-blue);
+      color: #1e40af;
+    }
+
+    .status.locked {
+      background: #fff7ed;
+      color: var(--warn);
+    }
+
+    .status.complete {
+      background: #ecfdf5;
+      color: var(--good);
+    }
+
+    .notice {
+      border-left: 5px solid var(--brand);
+      padding: 0.8rem 1rem;
+      background: #f8fbff;
+      border-radius: 0.65rem;
+    }
+
+    .notice.warn {
+      border-color: var(--warn);
+      background: #fffbeb;
+    }
+
+    .notice.danger {
+      border-color: var(--danger);
+      background: #fef2f2;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .week-controls {
+      display: flex;
+      gap: 0.75rem;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+
+    .week-controls label {
+      min-width: 230px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 0.85rem;
+    }
+
+    table {
+      width: 100%;
+      min-width: 980px;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    th {
+      background: var(--soft-blue);
+      text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    th:first-child,
+    td:first-child {
+      position: sticky;
+      left: 0;
+      background: #f8fafc;
+      font-weight: 800;
+      z-index: 2;
+      min-width: 170px;
+    }
+
+    th:first-child {
+      z-index: 3;
+      background: #dbeafe;
+    }
+
+    .prediction-cell {
+      display: grid;
+      gap: 0.5rem;
+      min-width: 180px;
+    }
+
+    .format-hint {
+      display: block;
+      margin-top: 0.35rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+
+
+    .save-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 0.35rem;
+      font-size: 0.88rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .save-status.saved {
+      color: var(--good);
+    }
+
+    .save-status.unsaved {
+      color: var(--warn);
+    }
+
+    .save-status.empty {
+      color: var(--muted);
+    }
+
+    .tie-break-options {
+      border: 1px solid var(--line);
+      border-radius: 0.85rem;
+      padding: 1rem;
+      background: #f8fafc;
+    }
+
+    .mini-game-panel {
+      display: grid;
+      gap: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .mini-game-target {
+      font-size: 1.25rem;
+      font-weight: 900;
+    }
+
+    .mini-game-result {
+      font-weight: 800;
+    }
+
+    .result-cell {
+      display: grid;
+      gap: 0.5rem;
+      min-width: 190px;
+    }
+
+    .score-pill {
+      display: inline-block;
+      background: #ecfdf5;
+      color: var(--good);
+      padding: 0.25rem 0.55rem;
+      border-radius: 999px;
+      font-weight: 800;
+    }
+
+    .error {
+      color: var(--danger);
+      font-weight: 800;
+    }
+
+    .success {
+      color: var(--good);
+      font-weight: 800;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .rules li {
+      margin-bottom: 0.5rem;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 2rem;
+    }
+
+
+    /* Sports Master pro sports theme overrides */
+    :root {
+      --bg: #07111f;
+      --panel: rgba(12, 27, 48, 0.92);
+      --ink: #eaf2ff;
+      --muted: #9fb4cf;
+      --line: rgba(148, 163, 184, 0.24);
+      --brand: #facc15;
+      --brand-dark: #eab308;
+      --danger: #ef4444;
+      --good: #22c55e;
+      --warn: #fb923c;
+      --soft-blue: rgba(30, 64, 175, 0.28);
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+      --pitch: rgba(34, 197, 94, 0.08);
+      --panel-light: rgba(15, 38, 68, 0.96);
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(250, 204, 21, 0.16), transparent 32rem),
+        radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 30rem),
+        linear-gradient(135deg, #06111f 0%, #091827 44%, #07111f 100%);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.14;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.09) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.09) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+    }
+
+    header {
+      background:
+        linear-gradient(135deg, rgba(5, 12, 24, 0.98), rgba(11, 34, 57, 0.98)),
+        repeating-linear-gradient(90deg, transparent 0 42px, rgba(255,255,255,0.04) 42px 44px);
+      border-bottom: 3px solid rgba(250, 204, 21, 0.8);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .header-inner {
+      position: relative;
+    }
+
+    .header-inner::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1.4rem;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--brand), transparent);
+      opacity: 0.8;
+    }
+
+    h1 {
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-shadow: 0 2px 18px rgba(250, 204, 21, 0.22);
+    }
+
+    h2 {
+      letter-spacing: -0.02em;
+    }
+
+    main {
+      position: relative;
+    }
+
+    .card {
+      background:
+        linear-gradient(180deg, rgba(18, 43, 75, 0.96), rgba(9, 22, 39, 0.96)),
+        linear-gradient(90deg, transparent, rgba(250, 204, 21, 0.06), transparent);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .card > h2:first-child,
+    .toolbar h2 {
+      color: #f8fafc;
+    }
+
+    .toolbar {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    input,
+    textarea,
+    select {
+      background: rgba(2, 6, 23, 0.68);
+      border-color: rgba(148, 163, 184, 0.32);
+      color: #f8fafc;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: rgba(203, 213, 225, 0.58);
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: 2px solid rgba(250, 204, 21, 0.42);
+      border-color: rgba(250, 204, 21, 0.75);
+      box-shadow: 0 0 0 5px rgba(250, 204, 21, 0.12);
+    }
+
+    button {
+      background: linear-gradient(135deg, #facc15, #f97316);
+      color: #111827;
+      box-shadow: 0 8px 20px rgba(249, 115, 22, 0.22);
+      border: 1px solid rgba(254, 240, 138, 0.5);
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #fde047, #fb923c);
+      transform: translateY(-1px);
+    }
+
+    button.secondary {
+      background: linear-gradient(135deg, #1e3a8a, #0f172a);
+      color: #eaf2ff;
+      border-color: rgba(147, 197, 253, 0.35);
+      box-shadow: none;
+    }
+
+    button.danger {
+      background: linear-gradient(135deg, #ef4444, #991b1b);
+      color: #fff;
+      border-color: rgba(248, 113, 113, 0.5);
+    }
+
+    .status {
+      background: rgba(250, 204, 21, 0.14);
+      border: 1px solid rgba(250, 204, 21, 0.45);
+      color: #fde68a;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .status.locked {
+      background: rgba(251, 146, 60, 0.16);
+      border-color: rgba(251, 146, 60, 0.5);
+      color: #fed7aa;
+    }
+
+    .status.complete {
+      background: rgba(34, 197, 94, 0.14);
+      border-color: rgba(34, 197, 94, 0.45);
+      color: #bbf7d0;
+    }
+
+    .notice {
+      background: rgba(15, 23, 42, 0.72);
+      border-left-color: var(--brand);
+      color: #dbeafe;
+    }
+
+    .notice.warn {
+      background: rgba(120, 53, 15, 0.30);
+    }
+
+    .table-wrap {
+      border-color: rgba(148, 163, 184, 0.26);
+      background: rgba(2, 6, 23, 0.36);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    table {
+      background: transparent;
+    }
+
+    th,
+    td {
+      border-color: rgba(148, 163, 184, 0.22);
+    }
+
+    th {
+      background: linear-gradient(180deg, rgba(30, 64, 175, 0.72), rgba(15, 23, 42, 0.82));
+      color: #fef9c3;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 0.84rem;
+    }
+
+    td {
+      background: rgba(15, 23, 42, 0.36);
+      color: #e2e8f0;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: rgba(30, 41, 59, 0.34);
+    }
+
+    th:first-child,
+    td:first-child {
+      background: linear-gradient(180deg, rgba(8, 47, 73, 0.94), rgba(15, 23, 42, 0.94));
+      color: #fef3c7;
+    }
+
+    th:first-child {
+      background: linear-gradient(180deg, rgba(250, 204, 21, 0.26), rgba(15, 23, 42, 0.94));
+    }
+
+    a {
+      color: #7dd3fc;
+      font-weight: 800;
+    }
+
+    .score-pill {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.22), rgba(20, 184, 166, 0.16));
+      color: #bbf7d0;
+      border: 1px solid rgba(34, 197, 94, 0.42);
+      box-shadow: 0 0 18px rgba(34, 197, 94, 0.12);
+    }
+
+    .tie-break-options {
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.84), rgba(12, 74, 110, 0.28));
+      border-color: rgba(250, 204, 21, 0.22);
+    }
+
+    .mini-game-panel {
+      background:
+        radial-gradient(circle at center, rgba(34, 197, 94, 0.12), transparent 20rem),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: auto, 48px 48px, 48px 48px;
+      padding: 1rem;
+      border: 1px solid rgba(34, 197, 94, 0.22);
+      border-radius: 1rem;
+    }
+
+    .mini-game-target {
+      color: #fef08a;
+      text-shadow: 0 0 16px rgba(250, 204, 21, 0.25);
+    }
+
+    footer {
+      color: rgba(203, 213, 225, 0.72);
+    }
+
+    .app-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .version-badge {
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(203, 213, 225, 0.62);
+      border: 1px solid rgba(250, 204, 21, 0.18);
+      border-radius: 999px;
+      padding: 0.15rem 0.45rem;
+      background: rgba(15, 23, 42, 0.32);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 760px) {
+      header { padding: 1rem; }
+      main { padding: 1rem; }
+      .card { border-radius: 0.85rem; }
+      h1 { font-size: 1.65rem; }
+    }
+
+  </style>
 </head>
+
 <body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <div class="app-title-row">
+          <h1>Sports Master</h1>
+          <span class="version-badge">v2026.07.20.1</span>
+        </div>
+        <div id="weekSummary">Loading...</div>
+      </div>
 
-<!-- ══════════════════════════════════════════════
-     MAIN APP
-     ══════════════════════════════════════════════ -->
-<div id="app">
-
-<div class="hdr">
-  <div class="hdr-title">⚽ FIFA World Cup 2026</div>
-  <div class="hdr-sub">Live Wall Chart · USA · Canada · Mexico . v2026-07-15-1</div>
-</div>
-
-<div class="update-bar">
-  <button class="update-btn" id="update-btn" onclick="fetchLiveData()">
-    <span id="update-icon">🔄</span> Update scores
-  </button>
-  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-    <span id="api-status-badge" class="api-status api-wait">Ready</span>
-    <span id="fb-status-badge" class="fb-badge" style="display:none">🔥 Firebase connected</span>
-    <span id="last-updated" class="last-updated">Not yet fetched</span>
-    <button class="nav-btn" id="admin-login-btn" onclick="adminLogin()">Admin sign in</button>
-    <span id="admin-status" class="last-updated">Not signed in</span>
-    <span class="auto-badge" id="auto-badge">⏱ Auto-updating</span>
-  </div>
-</div>
-
-<div class="nav">
-  <button class="nav-btn active" onclick="showSec('groups')">Group Stage</button>
-  <button class="nav-btn" onclick="showSec('r32')">Round of 32</button>
-  <button class="nav-btn" onclick="showSec('r16')">Round of 16</button>
-  <button class="nav-btn" onclick="showSec('qf')">Quarter-finals</button>
-  <button class="nav-btn" onclick="showSec('sf')">Semi-finals</button>
-  <button class="nav-btn" onclick="showSec('final')">Final</button>
-  <button class="nav-btn" onclick="showSec('schedule')">📅 Schedule</button>
-</div>
-
-<div id="sec-groups" class="sec active">
-  <div class="banner"><b>Green</b> = automatic qualifier · <b>Gold</b> = possible best 3rd · Scores sync automatically for all visitors via Firebase</div>
-  <div id="groups-container" class="groups-grid"></div>
-  <div class="thirds-panel" style="margin-top:12px;">
-    <div class="thirds-title">Best 3rd-place teams — top 8 of 12 qualify</div>
-    <div id="thirds-grid" class="thirds-grid"></div>
-  </div>
-</div>
-<div id="sec-r32" class="sec"><div class="banner">Teams fill automatically from group results.</div><div class="ko-stage-label">Round of 32</div><div id="ko-r32"></div></div>
-<div id="sec-r16" class="sec"><div class="banner">Round of 16</div><div class="ko-stage-label">Round of 16</div><div id="ko-r16"></div></div>
-<div id="sec-qf" class="sec"><div class="banner">Quarter-finals</div><div class="ko-stage-label">Quarter-finals</div><div id="ko-qf"></div></div>
-<div id="sec-sf" class="sec">
-  <div class="banner">Semi-finals + 3rd place play-off</div>
-  <div class="ko-stage-label">Semi-finals</div><div id="ko-sf"></div>
-  <div class="ko-stage-label" style="margin-top:18px;">3rd Place Play-off · 18 July · Miami</div>
-  <div id="ko-3p" style="max-width:280px;margin:0 auto;"></div>
-</div>
-<div id="sec-final" class="sec">
-  <div class="banner">The Final — MetLife Stadium, New Jersey — 19 July 2026</div>
-  <div class="ko-stage-label" style="font-size:16px;margin:20px 0 12px;">🏆 World Cup Final</div>
-  <div id="ko-final" class="final-wrap"></div>
-  <div id="champion-display"></div>
-</div>
-<div id="sec-schedule" class="sec">
-  <div class="sch-controls">
-    <div class="sch-pills" id="round-pills">
-      <button class="pill active" onclick="setSchRound(this,'all')">All</button>
-      <button class="pill" onclick="setSchRound(this,'gs')">Groups</button>
-      <button class="pill" onclick="setSchRound(this,'r32')">R32</button>
-      <button class="pill" onclick="setSchRound(this,'r16')">R16</button>
-      <button class="pill" onclick="setSchRound(this,'qf')">QF</button>
-      <button class="pill" onclick="setSchRound(this,'sf')">SF</button>
-      <button class="pill" onclick="setSchRound(this,'3p')">3rd</button>
-      <button class="pill" onclick="setSchRound(this,'final')">Final</button>
+      <div id="signedInActions" class="hidden">
+        <span id="adminBadge" class="status complete hidden">Admin</span>
+        <button id="signOutButton" class="secondary">Sign out</button>
+      </div>
     </div>
-    <div class="sch-pills" id="country-pills">
-      <button class="pill active" onclick="setSchCountry(this,'all')">All</button>
-      <button class="pill" onclick="setSchCountry(this,'usa')">🇺🇸 USA</button>
-      <button class="pill" onclick="setSchCountry(this,'mex')">🇲🇽 Mexico</button>
-      <button class="pill" onclick="setSchCountry(this,'can')">🇨🇦 Canada</button>
-    </div>
-    <input class="sch-search" type="text" placeholder="Search team, city…" oninput="setSchSearch(this.value)">
-  </div>
-  <div class="sch-stats" id="sch-stats"></div>
-  <div id="sch-list"></div>
-</div>
-</div>
+  </header>
 
-<div class="toast" id="toast"></div>
+  <main>
+    <section id="authCard" class="card">
+      <h2>Register or sign in</h2>
+      <p class="muted">
+        Register once using your name, preferred name and email address. After that, sign in to play each week.
+      </p>
 
-<!-- Firebase SDK -->
-<script type="module">
-import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import{getDatabase,ref,set,onValue,get}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
-import{
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  onAuthStateChanged,
-  signOut
-}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+      <div class="grid two">
+        <form id="registerForm" class="grid">
+          <h3>New player</h3>
 
-window._fbImports={
-  initializeApp,
-  getDatabase,
-  ref,
-  set,
-  onValue,
-  get,
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  onAuthStateChanged,
-  signOut
-};
+          <label>
+            Full name
+            <input id="registerFullName" autocomplete="name" required />
+          </label>
 
-window.dispatchEvent(new Event('fbReady'));
-</script>
+          <label>
+            Preferred name or nickname
+            <input id="registerNickname" required />
+          </label>
 
-<script>
-// ════════════════════════════════════════════════
-// CONFIG — loaded from localStorage (never in source)
-// ════════════════════════════════════════════════
-let CFG={apiKey:'',fbApiKey:'AIzaSyCX9axD4uj7Owf_s_hhS1YUB0PM3MI0irE',fbAuthDomain:'worldcup26-edbfd.firebaseapp.com',fbDbUrl:'https://worldcup26-edbfd-default-rtdb.firebaseio.com',fbProjectId:'worldcup26-edbfd'};
-let fbDb=null, fbReady=false, useFirebase=false;
-let fbAuth=null;
-let currentUser=null;
-const AUTO_REFRESH_MS=3*60*1000;
-let autoTimer=null;
+          <label>
+            Email address
+            <input id="registerEmail" type="email" autocomplete="email" required />
+          </label>
 
-async function launch(withFirebase){
-  initState();
-  
-  // Render the static page, but do not auto-pick the relevant section yet.
-  renderGroups();
-  renderKO();
+          <label>
+            Password
+            <input id="registerPassword" type="password" autocomplete="new-password" minlength="6" required />
+          </label>
 
-  if(withFirebase && window._fbImports){
-    try{
-      const{initializeApp,getDatabase,ref,onValue,set,get,getAuth,onAuthStateChanged}=window._fbImports;
-      const fbApp=initializeApp({
-        apiKey:CFG.fbApiKey,authDomain:CFG.fbAuthDomain,
-        databaseURL:CFG.fbDbUrl,projectId:CFG.fbProjectId
-      });
-      fbDb=getDatabase(fbApp);
-      fbAuth=getAuth(fbApp);
+          <button type="submit">Register</button>
+          <div id="registerMessage"></div>
+        </form>
 
-      onAuthStateChanged(fbAuth,user=>{
-        currentUser=user;
-        const adminStatus=document.getElementById('admin-status');
-        const adminBtn=document.getElementById('admin-login-btn');
+        <form id="signInForm" class="grid">
+          <h3>Returning player</h3>
 
-        if(user){
-          if(adminStatus)adminStatus.textContent='Signed in: '+(user.email||user.uid);
-          if(adminBtn)adminBtn.textContent='Signed in';
-        }else{
-          if(adminStatus)adminStatus.textContent='Not signed in';
-          if(adminBtn)adminBtn.textContent='Admin sign in';
-        }
-      });
+          <label>
+            Email address
+            <input id="signInEmail" type="email" autocomplete="email" required />
+          </label>
 
-      useFirebase=true;
-      document.getElementById('fb-status-badge').style.display='inline';
-      // Listen for real-time updates from Firebase
-      const scoresRef=ref(fbDb,'wc2026/scores');
-      onValue(scoresRef,snapshot=>{
-        const data=snapshot.val();
-        if(data){
-          if(data.apiData) Object.assign(apiData,data.apiData);
-          if(data.groups) Object.assign(state.groups,data.groups);
-          if(data.ko) Object.assign(state.ko,data.ko);
+          <label>
+            Password
+            <input id="signInPassword" type="password" autocomplete="current-password" required />
+          </label>
 
-          if(data.lastUpdated){
-            document.getElementById('last-updated').textContent = 'Updated: ' + data.lastUpdated;
-          }
-          
-          if(!hasLoadedFirebaseOnce){
-            hasLoadedFirebaseOnce = true;
-            hasAutoOpenedRelevantSection = false;
-          }
-          renderAll();          
-          setApiStatus('ok','✓ Live from Firebase');
-        }
-      });
-      toast('🔥 Firebase connected — scores will sync to all visitors','ok');
-    }catch(e){
-      useFirebase=false;
-      toast('Firebase error: '+e.message+' — running without sync','err');
-    }
-  } else {
-    // Just fetch from API directly
-    fetchLiveData();
-  }
-}
-async function adminLogin(){
-  if(!fbAuth){
-    toast('Firebase Auth is not ready yet','err');
-    return;
-  }
+          <button type="submit">Sign in</button>
+          <div id="signInMessage"></div>
+        </form>
+      </div>
+    </section>
 
-  try{
-    const{GoogleAuthProvider,signInWithPopup}=window._fbImports;
-    const provider=new GoogleAuthProvider();
-    const result=await signInWithPopup(fbAuth,provider);
-    currentUser=result.user;
-    toast('Signed in as '+(currentUser.email||currentUser.uid),'ok');
-  }catch(e){
-    console.error(e);
-    toast('Sign-in failed: '+e.message,'err');
-  }
-}
+    <section id="playerCard" class="card hidden">
+      <div class="toolbar">
+        <div>
+          <h2 id="welcomeTitle">Welcome</h2>
+          <p id="playerStatus" class="muted"></p>
+        </div>
 
-async function saveToFirebase(){
-  if(!useFirebase||!fbDb){
-    toast('Firebase is not connected, so scores were not synced','err');
-    return false;
-  }
+        <button id="withdrawButton" class="danger">Withdraw this week</button>
+      </div>
+    </section>
 
-  try{
-    const{ref,set}=window._fbImports;
-    const scoresRef=ref(fbDb,'wc2026/scores');
+    <section id="eventCard" class="card hidden">
+      <h2>Your event column</h2>
+      <p class="muted">
+        Choose one sporting event for the week. The event must start between Friday 1700 and Monday 0800 New Zealand Time.
+      </p>
 
-    await set(scoresRef,{
-      apiData,
-      groups:state.groups,
-      ko:state.ko,
-      lastUpdated:new Date().toLocaleTimeString()
-    });
+      <form id="eventForm" class="grid">
+        <div class="grid two">
+          <label>
+            Sport
+            <input id="sport" placeholder="Football, rugby, horse racing..." required />
+          </label>
 
-    return true;
-  }catch(e){
-    console.error('Firebase save error:',e);
+          <label>
+            Event
+            <input id="eventName" placeholder="Team A v Team B, Race 6..." required />
+          </label>
+        </div>
 
-    if(String(e.message).toLowerCase().includes('permission')){
-      toast('Firebase write denied. Sign in as admin, or check your rules/admin UID.','err');
-    }else{
-      toast('Firebase save error: '+e.message,'err');
-    }
+        <div class="grid two">
+          <label>
+            Event link
+            <input id="eventLink" type="url" placeholder="https://..." required />
+          </label>
 
-    return false;
-  }
-}
+          <label>
+            Event start time, New Zealand time
+            <input id="eventStartAt" type="datetime-local" required />
+          </label>
+        </div>
 
-// ════════════════════════════════════════════════
-// STATIC DATA
-// ════════════════════════════════════════════════
-const GROUPS={
-  A:['Mexico','South Africa','Korea Republic','Czech Republic'],
-  B:['Canada','Bosnia-Herzegovina','Qatar','Switzerland'],
-  C:['Brazil','Morocco','Haiti','Scotland'],
-  D:['United States','Paraguay','Australia','Turkey'],
-  E:['Germany','Curaçao','Ivory Coast','Ecuador'],
-  F:['Netherlands','Japan','Sweden','Tunisia'],
-  G:['Belgium','Egypt','Iran','New Zealand'],
-  H:['Spain','Cape Verde','Saudi Arabia','Uruguay'],
-  I:['France','Senegal','Iraq','Norway'],
-  J:['Argentina','Algeria','Austria','Jordan'],
-  K:['Portugal','DR Congo','Uzbekistan','Colombia'],
-  L:['England','Croatia','Ghana','Panama']
-};
-const GF=[[0,1],[2,3],[0,2],[3,1],[3,0],[1,2]];
-const G_MIDS={
-  A:[1,2,28,25,53,54],B:[3,8,27,26,51,52],C:[7,5,29,30,49,50],
-  D:[4,6,32,31,59,60],E:[10,9,33,34,56,55],F:[11,12,35,36,58,57],
-  G:[16,15,39,40,64,63],H:[14,13,38,37,66,65],I:[17,18,42,41,61,62],
-  J:[19,20,43,44,70,69],K:[23,24,47,48,71,72],L:[22,21,45,46,67,68]
-};
-const MID_TO_GFI={};
-Object.keys(G_MIDS).forEach(g=>G_MIDS[g].forEach((mid,fi)=>{MID_TO_GFI[mid]={g,fi};}));
-const FLAGS={'Mexico':'mx','South Africa':'za','Korea Republic':'kr','Czech Republic':'cz','Canada':'ca','Bosnia-Herzegovina':'ba','Qatar':'qa','Switzerland':'ch','United States':'us','Paraguay':'py','Australia':'au','Turkey':'tr','Haiti':'ht','Scotland':'gb-sct','Brazil':'br','Morocco':'ma','Ivory Coast':'ci','Ecuador':'ec','Germany':'de','Curaçao':'cw','Netherlands':'nl','Japan':'jp','Sweden':'se','Tunisia':'tn','Saudi Arabia':'sa','Uruguay':'uy','Spain':'es','Cape Verde':'cv','Iran':'ir','New Zealand':'nz','Belgium':'be','Egypt':'eg','France':'fr','Senegal':'sn','Iraq':'iq','Norway':'no','Argentina':'ar','Algeria':'dz','Austria':'at','Jordan':'jo','Ghana':'gh','Panama':'pa','England':'gb-eng','Croatia':'hr','Portugal':'pt','DR Congo':'cd','Uzbekistan':'uz','Colombia':'co'};
-const API_TEAM_MAP={'South Korea':'Korea Republic','Bosnia and Herzegovina':'Bosnia-Herzegovina','Turkey':'Turkey','Türkiye':'Turkey','Curacao':'Curaçao','DR Congo':'DR Congo','Congo DR':'DR Congo','Cape Verde':'Cape Verde','Cabo Verde':'Cape Verde','Czechia':'Czech Republic','United States':'United States','USA':'United States',"Côte d'Ivoire":'Ivory Coast'};
-function normTeam(n){return API_TEAM_MAP[n]||n;}
-const MATCHES=[
-  {id:1,date:'2026-06-11',time:'13:00',home:'Mexico',away:'South Africa',venue:'Estadio Azteca',city:'Mexico City',country:'mex',round:'gs',group:'A'},
-  {id:2,date:'2026-06-11',time:'20:00',home:'Korea Republic',away:'Czech Republic',venue:'Estadio Akron',city:'Guadalajara',country:'mex',round:'gs',group:'A'},
-  {id:3,date:'2026-06-12',time:'15:00',home:'Canada',away:'Bosnia-Herzegovina',venue:'BMO Field',city:'Toronto',country:'can',round:'gs',group:'B'},
-  {id:4,date:'2026-06-12',time:'18:00',home:'United States',away:'Paraguay',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'gs',group:'D'},
-  {id:5,date:'2026-06-13',time:'21:00',home:'Haiti',away:'Scotland',venue:'Gillette Stadium',city:'Boston',country:'usa',round:'gs',group:'C'},
-  {id:6,date:'2026-06-13',time:'21:00',home:'Australia',away:'Turkey',venue:'BC Place',city:'Vancouver',country:'can',round:'gs',group:'D'},
-  {id:7,date:'2026-06-13',time:'18:00',home:'Brazil',away:'Morocco',venue:'MetLife Stadium',city:'New York/NJ',country:'usa',round:'gs',group:'C'},
-  {id:8,date:'2026-06-13',time:'12:00',home:'Qatar',away:'Switzerland',venue:"Levi's Stadium",city:'San Francisco',country:'usa',round:'gs',group:'B'},
-  {id:9,date:'2026-06-14',time:'19:00',home:'Ivory Coast',away:'Ecuador',venue:'Lincoln Financial Field',city:'Philadelphia',country:'usa',round:'gs',group:'E'},
-  {id:10,date:'2026-06-14',time:'12:00',home:'Germany',away:'Curaçao',venue:'NRG Stadium',city:'Houston',country:'usa',round:'gs',group:'E'},
-  {id:11,date:'2026-06-14',time:'15:00',home:'Netherlands',away:'Japan',venue:'AT&T Stadium',city:'Dallas',country:'usa',round:'gs',group:'F'},
-  {id:12,date:'2026-06-14',time:'20:00',home:'Sweden',away:'Tunisia',venue:'Estadio BBVA',city:'Monterrey',country:'mex',round:'gs',group:'F'},
-  {id:13,date:'2026-06-15',time:'18:00',home:'Saudi Arabia',away:'Uruguay',venue:'Hard Rock Stadium',city:'Miami',country:'usa',round:'gs',group:'H'},
-  {id:14,date:'2026-06-15',time:'12:00',home:'Spain',away:'Cape Verde',venue:'Mercedes-Benz Stadium',city:'Atlanta',country:'usa',round:'gs',group:'H'},
-  {id:15,date:'2026-06-15',time:'18:00',home:'Iran',away:'New Zealand',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'gs',group:'G'},
-  {id:16,date:'2026-06-15',time:'12:00',home:'Belgium',away:'Egypt',venue:'Lumen Field',city:'Seattle',country:'usa',round:'gs',group:'G'},
-  {id:17,date:'2026-06-16',time:'15:00',home:'France',away:'Senegal',venue:'MetLife Stadium',city:'New York/NJ',country:'usa',round:'gs',group:'I'},
-  {id:18,date:'2026-06-16',time:'18:00',home:'Iraq',away:'Norway',venue:'Gillette Stadium',city:'Boston',country:'usa',round:'gs',group:'I'},
-  {id:19,date:'2026-06-16',time:'20:00',home:'Argentina',away:'Algeria',venue:'Arrowhead Stadium',city:'Kansas City',country:'usa',round:'gs',group:'J'},
-  {id:20,date:'2026-06-16',time:'21:00',home:'Austria',away:'Jordan',venue:"Levi's Stadium",city:'San Francisco',country:'usa',round:'gs',group:'J'},
-  {id:21,date:'2026-06-17',time:'19:00',home:'Ghana',away:'Panama',venue:'BMO Field',city:'Toronto',country:'can',round:'gs',group:'L'},
-  {id:22,date:'2026-06-17',time:'15:00',home:'England',away:'Croatia',venue:'AT&T Stadium',city:'Dallas',country:'usa',round:'gs',group:'L'},
-  {id:23,date:'2026-06-17',time:'12:00',home:'Portugal',away:'DR Congo',venue:'NRG Stadium',city:'Houston',country:'usa',round:'gs',group:'K'},
-  {id:24,date:'2026-06-17',time:'20:00',home:'Uzbekistan',away:'Colombia',venue:'Estadio Azteca',city:'Mexico City',country:'mex',round:'gs',group:'K'},
-  {id:25,date:'2026-06-18',time:'12:00',home:'Czech Republic',away:'South Africa',venue:'Mercedes-Benz Stadium',city:'Atlanta',country:'usa',round:'gs',group:'A'},
-  {id:26,date:'2026-06-18',time:'12:00',home:'Switzerland',away:'Bosnia-Herzegovina',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'gs',group:'B'},
-  {id:27,date:'2026-06-18',time:'15:00',home:'Canada',away:'Qatar',venue:'BC Place',city:'Vancouver',country:'can',round:'gs',group:'B'},
-  {id:28,date:'2026-06-18',time:'19:00',home:'Mexico',away:'Korea Republic',venue:'Estadio Akron',city:'Guadalajara',country:'mex',round:'gs',group:'A'},
-  {id:29,date:'2026-06-19',time:'21:00',home:'Brazil',away:'Haiti',venue:'Lincoln Financial Field',city:'Philadelphia',country:'usa',round:'gs',group:'C'},
-  {id:30,date:'2026-06-19',time:'18:00',home:'Scotland',away:'Morocco',venue:'Gillette Stadium',city:'Boston',country:'usa',round:'gs',group:'C'},
-  {id:31,date:'2026-06-19',time:'20:00',home:'Turkey',away:'Paraguay',venue:"Levi's Stadium",city:'San Francisco',country:'usa',round:'gs',group:'D'},
-  {id:32,date:'2026-06-19',time:'12:00',home:'United States',away:'Australia',venue:'Lumen Field',city:'Seattle',country:'usa',round:'gs',group:'D'},
-  {id:33,date:'2026-06-20',time:'16:00',home:'Germany',away:'Ivory Coast',venue:'BMO Field',city:'Toronto',country:'can',round:'gs',group:'E'},
-  {id:34,date:'2026-06-20',time:'19:00',home:'Ecuador',away:'Curaçao',venue:'Arrowhead Stadium',city:'Kansas City',country:'usa',round:'gs',group:'E'},
-  {id:35,date:'2026-06-20',time:'12:00',home:'Netherlands',away:'Sweden',venue:'NRG Stadium',city:'Houston',country:'usa',round:'gs',group:'F'},
-  {id:36,date:'2026-06-20',time:'22:00',home:'Tunisia',away:'Japan',venue:'Estadio BBVA',city:'Monterrey',country:'mex',round:'gs',group:'F'},
-  {id:37,date:'2026-06-21',time:'18:00',home:'Uruguay',away:'Cape Verde',venue:'Hard Rock Stadium',city:'Miami',country:'usa',round:'gs',group:'H'},
-  {id:38,date:'2026-06-21',time:'12:00',home:'Spain',away:'Saudi Arabia',venue:'Mercedes-Benz Stadium',city:'Atlanta',country:'usa',round:'gs',group:'H'},
-  {id:39,date:'2026-06-21',time:'12:00',home:'Belgium',away:'Iran',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'gs',group:'G'},
-  {id:40,date:'2026-06-21',time:'18:00',home:'New Zealand',away:'Egypt',venue:'BC Place',city:'Vancouver',country:'can',round:'gs',group:'G'},
-  {id:41,date:'2026-06-22',time:'20:00',home:'Norway',away:'Senegal',venue:'MetLife Stadium',city:'New York/NJ',country:'usa',round:'gs',group:'I'},
-  {id:42,date:'2026-06-22',time:'17:00',home:'France',away:'Iraq',venue:'Lincoln Financial Field',city:'Philadelphia',country:'usa',round:'gs',group:'I'},
-  {id:43,date:'2026-06-22',time:'12:00',home:'Argentina',away:'Austria',venue:'AT&T Stadium',city:'Dallas',country:'usa',round:'gs',group:'J'},
-  {id:44,date:'2026-06-22',time:'20:00',home:'Jordan',away:'Algeria',venue:"Levi's Stadium",city:'San Francisco',country:'usa',round:'gs',group:'J'},
-  {id:45,date:'2026-06-23',time:'16:00',home:'England',away:'Ghana',venue:'Gillette Stadium',city:'Boston',country:'usa',round:'gs',group:'L'},
-  {id:46,date:'2026-06-23',time:'19:00',home:'Panama',away:'Croatia',venue:'BMO Field',city:'Toronto',country:'can',round:'gs',group:'L'},
-  {id:47,date:'2026-06-23',time:'12:00',home:'Portugal',away:'Uzbekistan',venue:'NRG Stadium',city:'Houston',country:'usa',round:'gs',group:'K'},
-  {id:48,date:'2026-06-23',time:'20:00',home:'Colombia',away:'DR Congo',venue:'Estadio Akron',city:'Guadalajara',country:'mex',round:'gs',group:'K'},
-  {id:49,date:'2026-06-24',time:'18:00',home:'Scotland',away:'Brazil',venue:'Hard Rock Stadium',city:'Miami',country:'usa',round:'gs',group:'C'},
-  {id:50,date:'2026-06-24',time:'18:00',home:'Morocco',away:'Haiti',venue:'Mercedes-Benz Stadium',city:'Atlanta',country:'usa',round:'gs',group:'C'},
-  {id:51,date:'2026-06-24',time:'12:00',home:'Switzerland',away:'Canada',venue:'BC Place',city:'Vancouver',country:'can',round:'gs',group:'B'},
-  {id:52,date:'2026-06-24',time:'12:00',home:'Bosnia-Herzegovina',away:'Qatar',venue:'Lumen Field',city:'Seattle',country:'usa',round:'gs',group:'B'},
-  {id:53,date:'2026-06-24',time:'19:00',home:'Czech Republic',away:'Mexico',venue:'Estadio Azteca',city:'Mexico City',country:'mex',round:'gs',group:'A'},
-  {id:54,date:'2026-06-24',time:'19:00',home:'South Africa',away:'Korea Republic',venue:'Estadio BBVA',city:'Monterrey',country:'mex',round:'gs',group:'A'},
-  {id:55,date:'2026-06-25',time:'16:00',home:'Curaçao',away:'Ivory Coast',venue:'Lincoln Financial Field',city:'Philadelphia',country:'usa',round:'gs',group:'E'},
-  {id:56,date:'2026-06-25',time:'16:00',home:'Ecuador',away:'Germany',venue:'MetLife Stadium',city:'New York/NJ',country:'usa',round:'gs',group:'E'},
-  {id:57,date:'2026-06-25',time:'18:00',home:'Japan',away:'Sweden',venue:'AT&T Stadium',city:'Dallas',country:'usa',round:'gs',group:'F'},
-  {id:58,date:'2026-06-25',time:'18:00',home:'Tunisia',away:'Netherlands',venue:'Arrowhead Stadium',city:'Kansas City',country:'usa',round:'gs',group:'F'},
-  {id:59,date:'2026-06-25',time:'19:00',home:'Turkey',away:'United States',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'gs',group:'D'},
-  {id:60,date:'2026-06-25',time:'19:00',home:'Paraguay',away:'Australia',venue:"Levi's Stadium",city:'San Francisco',country:'usa',round:'gs',group:'D'},
-  {id:61,date:'2026-06-26',time:'15:00',home:'Norway',away:'France',venue:'Gillette Stadium',city:'Boston',country:'usa',round:'gs',group:'I'},
-  {id:62,date:'2026-06-26',time:'15:00',home:'Senegal',away:'Iraq',venue:'BMO Field',city:'Toronto',country:'can',round:'gs',group:'I'},
-  {id:63,date:'2026-06-26',time:'20:00',home:'Egypt',away:'Iran',venue:'Lumen Field',city:'Seattle',country:'usa',round:'gs',group:'G'},
-  {id:64,date:'2026-06-26',time:'20:00',home:'New Zealand',away:'Belgium',venue:'BC Place',city:'Vancouver',country:'can',round:'gs',group:'G'},
-  {id:65,date:'2026-06-26',time:'19:00',home:'Cape Verde',away:'Saudi Arabia',venue:'NRG Stadium',city:'Houston',country:'usa',round:'gs',group:'H'},
-  {id:66,date:'2026-06-26',time:'18:00',home:'Uruguay',away:'Spain',venue:'Estadio Akron',city:'Guadalajara',country:'mex',round:'gs',group:'H'},
-  {id:67,date:'2026-06-27',time:'17:00',home:'Panama',away:'England',venue:'MetLife Stadium',city:'New York/NJ',country:'usa',round:'gs',group:'L'},
-  {id:68,date:'2026-06-27',time:'17:00',home:'Croatia',away:'Ghana',venue:'Lincoln Financial Field',city:'Philadelphia',country:'usa',round:'gs',group:'L'},
-  {id:69,date:'2026-06-27',time:'21:00',home:'Algeria',away:'Austria',venue:'Arrowhead Stadium',city:'Kansas City',country:'usa',round:'gs',group:'J'},
-  {id:70,date:'2026-06-27',time:'21:00',home:'Jordan',away:'Argentina',venue:'AT&T Stadium',city:'Dallas',country:'usa',round:'gs',group:'J'},
-  {id:71,date:'2026-06-27',time:'19:30',home:'Colombia',away:'Portugal',venue:'Hard Rock Stadium',city:'Miami',country:'usa',round:'gs',group:'K'},
-  {id:72,date:'2026-06-27',time:'19:30',home:'DR Congo',away:'Uzbekistan',venue:'Mercedes-Benz Stadium',city:'Atlanta',country:'usa',round:'gs',group:'K'},
-  {id:73,date:'2026-06-28',time:'12:00',home:'2nd Grp A',away:'2nd Grp B',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'r32'},
-  {id:74,date:'2026-06-29',time:'16:30',home:'1st Grp E',away:'Best 3rd',venue:'Gillette Stadium',city:'Boston',country:'usa',round:'r32'},
-  {id:75,date:'2026-06-29',time:'19:00',home:'1st Grp F',away:'2nd Grp C',venue:'Estadio BBVA',city:'Monterrey',country:'mex',round:'r32'},
-  {id:76,date:'2026-06-29',time:'12:00',home:'1st Grp C',away:'2nd Grp F',venue:'NRG Stadium',city:'Houston',country:'usa',round:'r32'},
-  {id:77,date:'2026-06-30',time:'17:00',home:'1st Grp I',away:'Best 3rd',venue:'MetLife Stadium',city:'New York/NJ',country:'usa',round:'r32'},
-  {id:78,date:'2026-06-30',time:'12:00',home:'2nd Grp E',away:'2nd Grp I',venue:'AT&T Stadium',city:'Dallas',country:'usa',round:'r32'},
-  {id:79,date:'2026-06-30',time:'19:00',home:'1st Grp A',away:'Best 3rd',venue:'Estadio Azteca',city:'Mexico City',country:'mex',round:'r32'},
-  {id:80,date:'2026-07-01',time:'12:00',home:'1st Grp L',away:'Best 3rd',venue:'Mercedes-Benz Stadium',city:'Atlanta',country:'usa',round:'r32'},
-  {id:81,date:'2026-07-01',time:'17:00',home:'1st Grp D',away:'Best 3rd',venue:"Levi's Stadium",city:'San Francisco',country:'usa',round:'r32'},
-  {id:82,date:'2026-07-01',time:'13:00',home:'1st Grp G',away:'Best 3rd',venue:'Lumen Field',city:'Seattle',country:'usa',round:'r32'},
-  {id:83,date:'2026-07-02',time:'19:00',home:'2nd Grp K',away:'2nd Grp L',venue:'BMO Field',city:'Toronto',country:'can',round:'r32'},
-  {id:84,date:'2026-07-02',time:'12:00',home:'1st Grp H',away:'2nd Grp J',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'r32'},
-  {id:85,date:'2026-07-02',time:'20:00',home:'1st Grp B',away:'Best 3rd',venue:'BC Place',city:'Vancouver',country:'can',round:'r32'},
-  {id:86,date:'2026-07-03',time:'18:00',home:'1st Grp J',away:'2nd Grp H',venue:'Hard Rock Stadium',city:'Miami',country:'usa',round:'r32'},
-  {id:87,date:'2026-07-03',time:'20:30',home:'1st Grp K',away:'Best 3rd',venue:'Arrowhead Stadium',city:'Kansas City',country:'usa',round:'r32'},
-  {id:88,date:'2026-07-03',time:'13:00',home:'2nd Grp D',away:'2nd Grp G',venue:'AT&T Stadium',city:'Dallas',country:'usa',round:'r32'},
-  {id:89,date:'2026-07-04',time:'17:00',home:'W74',away:'W77',venue:'Lincoln Financial Field',city:'Philadelphia',country:'usa',round:'r16'},
-  {id:90,date:'2026-07-04',time:'12:00',home:'W73',away:'W75',venue:'NRG Stadium',city:'Houston',country:'usa',round:'r16'},
-  {id:91,date:'2026-07-05',time:'16:00',home:'W76',away:'W78',venue:'MetLife Stadium',city:'New York/NJ',country:'usa',round:'r16'},
-  {id:92,date:'2026-07-05',time:'18:00',home:'W79',away:'W80',venue:'Estadio Azteca',city:'Mexico City',country:'mex',round:'r16'},
-  {id:93,date:'2026-07-06',time:'14:00',home:'W83',away:'W84',venue:'AT&T Stadium',city:'Dallas',country:'usa',round:'r16'},
-  {id:94,date:'2026-07-06',time:'17:00',home:'W81',away:'W82',venue:'Lumen Field',city:'Seattle',country:'usa',round:'r16'},
-  {id:95,date:'2026-07-07',time:'12:00',home:'W86',away:'W88',venue:'Mercedes-Benz Stadium',city:'Atlanta',country:'usa',round:'r16'},
-  {id:96,date:'2026-07-07',time:'13:00',home:'W85',away:'W87',venue:'BC Place',city:'Vancouver',country:'can',round:'r16'},
-  {id:97,date:'2026-07-09',time:'16:00',home:'W89',away:'W90',venue:'Gillette Stadium',city:'Boston',country:'usa',round:'qf'},
-  {id:98,date:'2026-07-10',time:'12:00',home:'W93',away:'W94',venue:'SoFi Stadium',city:'Los Angeles',country:'usa',round:'qf'},
-  {id:99,date:'2026-07-11',time:'17:00',home:'W91',away:'W92',venue:'Hard Rock Stadium',city:'Miami',country:'usa',round:'qf'},
-  {id:100,date:'2026-07-11',time:'20:00',home:'W95',away:'W96',venue:'Arrowhead Stadium',city:'Kansas City',country:'usa',round:'qf'},
-  {id:101,date:'2026-07-14',time:'14:00',home:'W97',away:'W98',venue:'AT&T Stadium',city:'Dallas',country:'usa',round:'sf'},
-  {id:102,date:'2026-07-15',time:'15:00',home:'W99',away:'W100',venue:'Mercedes-Benz Stadium',city:'Atlanta',country:'usa',round:'sf'},
-  {id:103,date:'2026-07-18',time:'17:00',home:'L101',away:'L102',venue:'Hard Rock Stadium',city:'Miami',country:'usa',round:'3p'},
-  {id:104,date:'2026-07-19',time:'15:00',home:'W101',away:'W102',venue:'MetLife Stadium',city:'New York/NJ',country:'usa',round:'final'}
-];
-const ROUND_LABELS={gs:'Group Stage',r32:'Round of 32',r16:'Round of 16',qf:'Quarter-final',sf:'Semi-final','3p':'3rd Place',final:'Final'};
-const BADGE_CLS={gs:'b-gs',r32:'b-r32',r16:'b-r16',qf:'b-qf',sf:'b-sf','3p':'b-3p',final:'b-final'};
+        <label>
+          Challenge description
+          <textarea id="challengeDescription" placeholder="Example: total goals scored, race winner, time of first goal..." required></textarea>
+        </label>
 
-// ════════════════════════════════════════════════
-// STATE
-// ════════════════════════════════════════════════
-let state={groups:{},ko:{},scorers:{}};
-let apiData={};
-let hasLiveMatches=false;
-let hasLoadedFirebaseOnce = false;  
+        <label>
+          Prediction format
+          <input id="predictionFormat" placeholder="Example: Team by 7, Player name, 3-1, 02:35, Horse name..." required />
+          <span class="format-hint">This appears in each player’s prediction box as the suggested format, helping everyone answer consistently while predictions remain hidden.</span>
+        </label>
 
-function initState(){
-  state={groups:{},ko:{},scorers:{}};
-  Object.keys(GROUPS).forEach(g=>{state.groups[g]=GF.map(()=>({hs:'',as:''}));});
-  for(let i=73;i<=104;i++) state.ko[i]={hs:'',as:''};
-  for(let i=1;i<=104;i++) state.scorers[i]={home:[],away:[]};
-}
+        <div class="grid tie-break-options">
+          <label>
+            Event tie-break
+            <select id="tieBreakType">
+              <option value="none">None</option>
+              <option value="text">Tie-breaker</option>
+              <option value="numeric">Stop the Timer</option>
+            </select>
+            <span class="format-hint">Use this when the main prediction may not produce a clear winner. Text tie-breakers use a separate tie-break answer. Stop the Timer uses each player's weekly timer result instead.</span>
+          </label>
 
-// ════════════════════════════════════════════════
-// EFFECTIVE SCORE
-// ════════════════════════════════════════════════
+          <div id="tieBreakDetails" class="grid hidden">
+            <label>
+              Tie-break question
+              <input id="tieBreakQuestion" placeholder="Example: Half-time score, total match points, winning time..." />
+            </label>
 
-function getScore(mid){
-  const d = apiData[mid];
+            <label>
+              Tie-break format
+              <input id="tieBreakFormat" placeholder="Example: HT 1:0, number only, 02:35..." />
+            </label>
+          </div>
+        </div>
 
-  if(
-    d &&
-    d.hs !== undefined &&
-    d.hs !== null &&
-    d.as !== undefined &&
-    d.as !== null &&
-    d.hs !== '' &&
-    d.as !== '' &&
-    !isNaN(parseInt(d.hs)) &&
-    !isNaN(parseInt(d.as))
-  ){
-    return {
-      hs: parseInt(d.hs),
-      as: parseInt(d.as),
-      fromApi: true
+        <button id="saveEventButton" type="submit">Save my event</button>
+        <div id="eventMessage"></div>
+      </form>
+    </section>
+
+    <section id="gameCard" class="card hidden">
+      <div class="toolbar">
+        <div>
+          <h2>This week’s game</h2>
+          <p id="lockMessage" class="muted"></p>
+        </div>
+
+        <div class="week-controls">
+          <label>
+            View week
+            <select id="weekSelector"></select>
+          </label>
+          <button id="latestWeekButton" type="button" class="secondary">View latest week</button>
+          <span id="statusBadge" class="status">Open</span>
+        </div>
+      </div>
+
+      <div id="historyNotice" class="notice warn hidden">
+        You are viewing a previous week. Event entries and predictions are read-only, but event owners can still select missing winners and add actual results.
+      </div>
+
+      <div id="emptyGameNotice" class="notice hidden">
+        No events have been added yet.
+      </div>
+
+      <div class="table-wrap">
+        <table id="gameTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="sportsmasterTieBreakCard" class="card hidden">
+      <div class="toolbar">
+        <div>
+          <h2>Sports Master weekly tie-breaker - Stop the Timer</h2>
+          <p class="muted">When the weekly winner is tied - Stop the Timer</p>
+        </div>
+        <span id="miniGameStatus" class="status">Ready</span>
+      </div>
+
+      <div class="mini-game-panel">
+        <div id="miniGameTarget" class="mini-game-target">Target: loading...</div>
+        <div class="muted">Click start, then press SPACE or click stop when you think you've reached the target. The timer is hidden while you play. Closest wins.</div>
+        <div>
+          <button id="miniGameStartButton" type="button">Start tie-breaker</button>
+          <button id="miniGameStopButton" type="button" class="secondary" disabled>Stop</button>
+        </div>
+        <div id="miniGameMessage" class="mini-game-result"></div>
+        <div id="miniGameLeaderboard"></div>
+      </div>
+    </section>
+
+    <section id="scoreCard" class="card hidden">
+      <h2>Leaderboard</h2>
+      <p class="muted">The week column shows points for the week currently selected above. Total points are calculated across all saved weeks.</p>
+      <div id="leaderboard"></div>
+    </section>
+
+    <section class="card rules">
+      <h2>Rules</h2>
+      <ol>
+        <li>Players must register with their full name, preferred name or nickname, and email address.</li>
+        <li>Each active player may create one event column per week.</li>
+        <li>Events must occur between 1700 New Zealand Time on Friday and 0800 New Zealand Time on Monday.</li>
+        <li>All events and predictions must be entered before 1700 New Zealand Time on Friday.</li>
+        <li>No new entries, edits or predictions are allowed during the event window.</li>
+        <li>Each challenge must have a clear result so that one winner can be chosen.</li>
+        <li>After Friday 1700 New Zealand Time, event owners can record the actual result and select the winning prediction.</li>
+        <li>Each event owner must specify a prediction format so players know how to answer.</li>
+        <li>Each event owner may add an optional tie-break question. The default is none.</li>
+        <li>Identical main predictions are only allowed when that event has a tie-breaker. Without a tie-breaker, predictions must be unique.</li>
+        <li>The winner of each event category gets one point. Everyone else gets zero for that category.</li>
+        <li>Players may withdraw from the weekly game if they choose.</li>
+        <li>Previous weeks remain available in the week selector. Event entries and predictions are read-only, but event owners can still select missing winners and add actual results.</li>
+        <li>The Sports Master weekly tie-break game can be used if the overall weekly points table is tied.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    Sports Master - Weekly Sports Challenge
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      setDoc,
+      getDoc,
+      getDocs,
+      onSnapshot,
+      serverTimestamp,
+      runTransaction
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAawyNX4CCAe_IsU4ZJTar2npxFyqwHFrE",
+      authDomain: "sportmaster-d86e0.firebaseapp.com",
+      projectId: "sportmaster-d86e0",
+      storageBucket: "sportmaster-d86e0.firebasestorage.app",
+      messagingSenderId: "178820430750",
+      appId: "1:178820430750:web:93e8db4fc4623cc712b48f"
     };
-  }
 
-  const gfi = MID_TO_GFI[mid];
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  if(gfi){
-    const sc = state.groups[gfi.g][gfi.fi];
+    const NZ_TIME_ZONE = "Pacific/Auckland";
 
-    if(
-      sc.hs !== undefined &&
-      sc.hs !== null &&
-      sc.as !== undefined &&
-      sc.as !== null &&
-      sc.hs !== '' &&
-      sc.as !== '' &&
-      !isNaN(parseInt(sc.hs)) &&
-      !isNaN(parseInt(sc.as))
-    ){
+    let currentUser = null;
+    let currentPlayer = null;
+    let currentIsAdmin = false;
+    let players = [];
+    let weeks = [];
+    let events = [];
+    let predictionsByEvent = {};
+    let sportsmasterTieBreakAttempts = [];
+    let sportsmasterTieBreakTarget = null;
+    let miniGameRunning = false;
+    let miniGameStartedAt = null;
+    let allTimeScores = new Map();
+    let selectedWeekId = null;
+    let eventFormDirty = false;
+    let eventFormLoadedKey = null;
+    let predictionDrafts = new Map();
+    let tieBreakDrafts = new Map();
+    let actualResultDrafts = new Map();
+    let unsubscribePlayers = null;
+    let unsubscribeWeeks = null;
+    let unsubscribeEvents = null;
+    let unsubscribePredictions = [];
+    let unsubscribeSportsmasterTieBreak = null;
+
+    const els = {
+      weekSummary: document.querySelector("#weekSummary"),
+      signedInActions: document.querySelector("#signedInActions"),
+      adminBadge: document.querySelector("#adminBadge"),
+      signOutButton: document.querySelector("#signOutButton"),
+
+      authCard: document.querySelector("#authCard"),
+      playerCard: document.querySelector("#playerCard"),
+      eventCard: document.querySelector("#eventCard"),
+      gameCard: document.querySelector("#gameCard"),
+      sportsmasterTieBreakCard: document.querySelector("#sportsmasterTieBreakCard"),
+      scoreCard: document.querySelector("#scoreCard"),
+
+      registerForm: document.querySelector("#registerForm"),
+      registerFullName: document.querySelector("#registerFullName"),
+      registerNickname: document.querySelector("#registerNickname"),
+      registerEmail: document.querySelector("#registerEmail"),
+      registerPassword: document.querySelector("#registerPassword"),
+      registerMessage: document.querySelector("#registerMessage"),
+
+      signInForm: document.querySelector("#signInForm"),
+      signInEmail: document.querySelector("#signInEmail"),
+      signInPassword: document.querySelector("#signInPassword"),
+      signInMessage: document.querySelector("#signInMessage"),
+
+      welcomeTitle: document.querySelector("#welcomeTitle"),
+      playerStatus: document.querySelector("#playerStatus"),
+      withdrawButton: document.querySelector("#withdrawButton"),
+
+      eventForm: document.querySelector("#eventForm"),
+      sport: document.querySelector("#sport"),
+      eventName: document.querySelector("#eventName"),
+      eventLink: document.querySelector("#eventLink"),
+      eventStartAt: document.querySelector("#eventStartAt"),
+      challengeDescription: document.querySelector("#challengeDescription"),
+      predictionFormat: document.querySelector("#predictionFormat"),
+      tieBreakType: document.querySelector("#tieBreakType"),
+      tieBreakDetails: document.querySelector("#tieBreakDetails"),
+      tieBreakQuestion: document.querySelector("#tieBreakQuestion"),
+      tieBreakFormat: document.querySelector("#tieBreakFormat"),
+      saveEventButton: document.querySelector("#saveEventButton"),
+      eventMessage: document.querySelector("#eventMessage"),
+
+      lockMessage: document.querySelector("#lockMessage"),
+      statusBadge: document.querySelector("#statusBadge"),
+      weekSelector: document.querySelector("#weekSelector"),
+      latestWeekButton: document.querySelector("#latestWeekButton"),
+      historyNotice: document.querySelector("#historyNotice"),
+      emptyGameNotice: document.querySelector("#emptyGameNotice"),
+      tableHead: document.querySelector("#tableHead"),
+      tableBody: document.querySelector("#tableBody"),
+      miniGameStatus: document.querySelector("#miniGameStatus"),
+      miniGameTarget: document.querySelector("#miniGameTarget"),
+      miniGameStartButton: document.querySelector("#miniGameStartButton"),
+      miniGameStopButton: document.querySelector("#miniGameStopButton"),
+      miniGameMessage: document.querySelector("#miniGameMessage"),
+      miniGameLeaderboard: document.querySelector("#miniGameLeaderboard"),
+      leaderboard: document.querySelector("#leaderboard")
+    };
+
+    function showMessage(element, message, type = "") {
+      element.textContent = message;
+      element.className = type;
+    }
+
+    function getNzParts(date = new Date()) {
+      const parts = new Intl.DateTimeFormat("en-NZ", {
+        timeZone: NZ_TIME_ZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }).formatToParts(date);
+
+      const lookup = {};
+      for (const part of parts) lookup[part.type] = part.value;
+
+      const weekdayMap = {
+        Mon: 1,
+        Tue: 2,
+        Wed: 3,
+        Thu: 4,
+        Fri: 5,
+        Sat: 6,
+        Sun: 0
+      };
+
       return {
-        hs: parseInt(sc.hs),
-        as: parseInt(sc.as),
-        fromApi: false
+        year: Number(lookup.year),
+        month: Number(lookup.month),
+        day: Number(lookup.day),
+        weekday: weekdayMap[lookup.weekday],
+        hour: Number(lookup.hour),
+        minute: Number(lookup.minute)
       };
     }
-  } else {
-    const sc = state.ko[mid];
 
-    if(
-      sc &&
-      sc.hs !== undefined &&
-      sc.hs !== null &&
-      sc.as !== undefined &&
-      sc.as !== null &&
-      sc.hs !== '' &&
-      sc.as !== '' &&
-      !isNaN(parseInt(sc.hs)) &&
-      !isNaN(parseInt(sc.as))
-    ){
+    function pad2(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function dateId(year, month, day) {
+      return `${year}-${pad2(month)}-${pad2(day)}`;
+    }
+
+    function addDaysToDateId(dateString, days) {
+      const date = new Date(`${dateString}T12:00:00+12:00`);
+      date.setUTCDate(date.getUTCDate() + days);
+      const parts = getNzParts(date);
+      return dateId(parts.year, parts.month, parts.day);
+    }
+
+    function getCurrentWeekInfo() {
+      const nz = getNzParts();
+      const todayId = dateId(nz.year, nz.month, nz.day);
+      let daysToFriday = (5 - nz.weekday + 7) % 7;
+
+      if (nz.weekday === 6) daysToFriday = -1;
+      if (nz.weekday === 0) daysToFriday = -2;
+      if (nz.weekday === 1 && nz.hour < 13) daysToFriday = -3;
+
+      const fridayId = addDaysToDateId(todayId, daysToFriday);
+      const mondayId = addDaysToDateId(fridayId, 3);
+
       return {
-        hs: parseInt(sc.hs),
-        as: parseInt(sc.as),
-        fromApi: false
+        weekId: fridayId,
+        fridayId,
+        mondayId,
+        lockLabel: `${fridayId} 17:00 NZT`,
+        windowLabel: `${fridayId} 17:00 to ${mondayId} 08:00 NZT`
       };
     }
-  }
 
-  return null;
-}
-  
-function getScorers(mid,side){
-  if(apiData[mid]&&apiData[mid][side+'Scorers']&&apiData[mid][side+'Scorers'].length)
-    return apiData[mid][side+'Scorers'].map(s=>({...s,fromApi:true}));
-  return(state.scorers[mid]&&state.scorers[mid][side]||[]).filter(x=>x.name&&x.name.trim()).map(s=>({...s,fromApi:false}));
-}
+    function currentWeekId() {
+      return getCurrentWeekInfo().weekId;
+    }
 
-// ════════════════════════════════════════════════
-// API FETCH
-// ════════════════════════════════════════════════
-async function fetchLiveData(){
-  // No API key needed — uses free open data via jsDelivr CDN (CORS-friendly)
-  const btn=document.getElementById('update-btn');
-  const icon=document.getElementById('update-icon');
-  btn.disabled=true;icon.className='spin';icon.textContent='⟳';
-  setApiStatus('wait','Fetching…');
+    function viewingCurrentWeek() {
+      return selectedWeekId === currentWeekId();
+    }
 
-  // Try multiple CDN URLs in order — all serve the same openfootball data with CORS headers
-  const URLS=[
-    'https://raw.githack.com/openfootball/worldcup.json/master/2026/worldcup.json',
-    'https://cdn.statically.io/gh/openfootball/worldcup.json/master/2026/worldcup.json',    
-    'https://cdn.jsdelivr.net/gh/openfootball/worldcup.json@master/2026/worldcup.json'
-  ];
+    function isLockedNow() {
+      const nz = getNzParts();
+      if (nz.weekday === 5 && nz.hour >= 17) return true;
+      if (nz.weekday === 6) return true;
+      if (nz.weekday === 0) return true;
+      if (nz.weekday === 1 && nz.hour < 13) return true;
+      return false;
+    }
+    function predictionsAreRevealed() {
+      return isLockedNow();
+    }
 
-  const NORM={
-    'Bosnia and Herzegovina':'Bosnia-Herzegovina','Bosnia & Herzegovina':'Bosnia-Herzegovina',
-    'Korea Republic':'Korea Republic','South Korea':'Korea Republic',
-    'DR Congo':'DR Congo','Congo DR':'DR Congo','Congo, DR':'DR Congo',
-    'Türkiye':'Turkey','Turkey':'Turkey',
-    'Curacao':'Curaçao','Curaçao':'Curaçao',
-    "Côte d'Ivoire":'Ivory Coast',"Cote d'Ivoire":'Ivory Coast','Ivory Coast':'Ivory Coast',
-    'Cape Verde':'Cape Verde','Cabo Verde':'Cape Verde',
-    'Czech Republic':'Czech Republic','Czechia':'Czech Republic',
-    'United States':'United States','USA':'United States','US':'United States'
-  };
-  function norm(n){return NORM[n]||n;}
+    function isReadOnlyView() {
+      return !viewingCurrentWeek();
+    }
 
-  let data=null;
-  let lastErr='';
-  for(const url of URLS){
-    try{
-      const res=await fetch(url,{cache:'no-cache'});
-      if(!res.ok){lastErr='HTTP '+res.status+' from '+url;continue;}
-      data=await res.json();
-      if(data)break;
-    }catch(e){lastErr=e.message;continue;}
-  }
+    function selectedWeekIsBeforeCurrentWeek() {
+      return String(selectedWeekId || "") < String(currentWeekId());
+    }
 
-  if(!data){
-    setApiStatus('err','Fetch failed: '+lastErr);
-    toast('Could not load scores — try again in a moment','err');
-    document.getElementById('update-btn').disabled=false;
-    document.getElementById('update-icon').className='';
-    document.getElementById('update-icon').textContent='🔄';
-    return;
-  }
+    function winnerSelectionIsOpen() {
+      if (!selectedWeekId) return false;
 
-  try{
-    hasLiveMatches=false;
-    let resultsCount=0;
+      if (selectedWeekIsBeforeCurrentWeek()) return true;
 
-    // openfootball 2026 format: data.matches[] flat array
-    // each match: {team1, team2, score:{ft:[h,a]}, goals1:[], goals2:[]}
-    // OR older format: data.rounds[].matches[]  score1/score2 fields
-    let allMatches=[];
-    if(data.matches) allMatches=data.matches;
-    else if(data.rounds) data.rounds.forEach(r=>{if(r.matches)allMatches.push(...r.matches);});
+      return viewingCurrentWeek() && predictionsAreRevealed();
+    }
 
-    allMatches.forEach(m=>{
-      // Get team names (may be string or object with .name)
-      const t1 = cleanTeamName(m.team1);
-      const t2 = cleanTeamName(m.team2);
+    function isEventTimeInsideWindow(datetimeLocal) {
+      if (!datetimeLocal) return false;
+      const eventDate = new Date(datetimeLocal);
+      const parts = getNzParts(eventDate);
+      if (parts.weekday === 5 && parts.hour >= 17) return true;
+      if (parts.weekday === 6) return true;
+      if (parts.weekday === 0) return true;
+      if (parts.weekday === 1 && parts.hour < 13) return true;
+      return false;
+    }
 
-      const homeN = norm(t1);
-      const awayN = norm(t2);
+    function normalisePrediction(value) {
+      return String(value || "").trim().toLowerCase();
+    }
 
-      // Find our internal match
-      let ourMatch = null;
+    function draftKey(eventId, playerId = currentUser ? currentUser.uid : "") {
+      return `${selectedWeekId}|${eventId}|${playerId || ""}`;
+    }
 
-      // Knockout matches from openfootball have a fixed "num" field.
-      // Use that first, because our local MATCHES array may still contain placeholders
-      // like "Best 3rd", "W74", "1st Grp E", etc.
-       if(m.num !== undefined && m.num !== null){
-         ourMatch = MATCHES.find(x => x.id === Number(m.num));
-       }
-      
-       // Group-stage fallback by team names.
-       if(!ourMatch){
-         ourMatch =
-          MATCHES.find(x => x.home === homeN && x.away === awayN) ||
-          MATCHES.find(x => norm(x.home) === homeN && norm(x.away) === awayN) ||
-          MATCHES.find(x => x.home.includes(homeN.split(' ')[0]) && x.away.includes(awayN.split(' ')[0]));
+    function actualResultDraftKey(eventId) {
+      return `${selectedWeekId}|${eventId}|actualResult`;
+    }
+
+    function captureTableDrafts() {
+      if (!currentUser) return;
+
+      document.querySelectorAll(".prediction-input").forEach(input => {
+        if (input.dataset.eventId) {
+          predictionDrafts.set(draftKey(input.dataset.eventId), input.value);
+        }
+      });
+
+      document.querySelectorAll(".tie-break-answer-input").forEach(input => {
+        if (input.dataset.eventId) {
+          tieBreakDrafts.set(draftKey(input.dataset.eventId), input.value);
+        }
+      });
+
+      document.querySelectorAll(".actual-result-input").forEach(input => {
+        if (input.dataset.eventId) {
+          actualResultDrafts.set(actualResultDraftKey(input.dataset.eventId), input.value);
+        }
+      });
+    }
+
+    function eventHasTieBreak(event) {
+      return event && event.tieBreakType && event.tieBreakType !== "none";
+    }
+
+    function eventUsesStopTimerTieBreak(event) {
+      return event && event.tieBreakType === "numeric";
+    }
+
+    function eventUsesTextTieBreak(event) {
+      return eventHasTieBreak(event) && !eventUsesStopTimerTieBreak(event);
+    }
+
+    function randomWholeSeconds(min, max) {
+      const range = max - min + 1;
+      if (window.crypto && crypto.getRandomValues) {
+        const values = new Uint32Array(1);
+        crypto.getRandomValues(values);
+        return min + (values[0] % range);
       }
-      
-      if(!ourMatch) return;
+      return min + Math.floor(Math.random() * range);
+    }
 
-      const mid = ourMatch.id;
-
-      if(mid >= 73){
-        apiData[mid] = {
-          ...(apiData[mid] || {}),
-          homeTeam: homeN,
-          awayTeam: awayN
-        };
+    function deterministicWholeSecondsFromWeek(weekId, min = 5, max = 12) {
+      const text = String(weekId || "sports-master");
+      let hash = 0;
+      for (let i = 0; i < text.length; i += 1) {
+        hash = ((hash << 5) - hash) + text.charCodeAt(i);
+        hash |= 0;
       }
+      const range = max - min + 1;
+      return min + (Math.abs(hash) % range);
+    }
 
-      // Score — support half-time, full-time, extra-time and penalties
-      const scoreObj = m.score || {};
+    function collectSportsmasterTieBreakAttempts() {
+      sportsmasterTieBreakAttempts = players
+        .map(player => {
+          const attempts = player.sportsmasterTieBreakAttempts || {};
+          const attempt = attempts[selectedWeekId];
+          if (!attempt) return null;
+          return {
+            id: player.id,
+            playerId: player.id,
+            playerNickname: player.nickname || player.fullName || "Player",
+            ...attempt
+          };
+        })
+        .filter(Boolean);
+    }
 
-      const ht = scoreObj.ht && scoreObj.ht.length === 2 ? scoreObj.ht : null;
-      const ft = scoreObj.ft && scoreObj.ft.length === 2 ? scoreObj.ft : null;
-      const et = scoreObj.et && scoreObj.et.length === 2 ? scoreObj.et : null;
-      const pens = scoreObj.p && scoreObj.p.length === 2 ? scoreObj.p : null;
-
-      // hs/as remain the normal full-time score for group tables and basic display fallback
-      let hs = null;
-      let as = null;
-
-      if(ft){
-        hs = ft[0];
-        as = ft[1];
-      } else if(m.score1 !== undefined && m.score1 !== null && m.score2 !== undefined){
-        hs = m.score1;
-        as = m.score2;
+    function toggleTieBreakDetails() {
+      const needsTextDetails = els.tieBreakType.value === "text";
+      els.tieBreakDetails.classList.toggle("hidden", !needsTextDetails);
+      els.tieBreakQuestion.required = needsTextDetails;
+      els.tieBreakFormat.required = needsTextDetails;
+      if (!needsTextDetails) {
+        els.tieBreakQuestion.value = "";
+        els.tieBreakFormat.value = "";
       }
-
-      if(hs === null || hs === undefined || as === null || as === undefined || hs === '' || as === '') return;
-      if(isNaN(parseInt(hs)) || isNaN(parseInt(as))) return;
-
-      resultsCount++;
-
-      // Goal scorers
-      const homeScorers=(m.goals1||[]).map(g=>({
-        name:g.name||'',
-        min:g.minute!==undefined?String(g.minute)+(g.offset?'+'+g.offset:''):'',
-        fromApi:true
-      }));
-      const awayScorers=(m.goals2||[]).map(g=>({
-        name:g.name||'',
-        min:g.minute!==undefined?String(g.minute)+(g.offset?'+'+g.offset:''):'',
-        fromApi:true
-      }));
-
-      apiData[mid] = {
-        hs: parseInt(hs),
-        as: parseInt(as),
-        status: pens ? 'PENS' : (et ? 'AET' : 'FT'),
-        isLive: false,
-        isDone: true,
-        homeTeam: homeN,
-        awayTeam: awayN,
-        homeScorers,
-        awayScorers,
-
-        // Store all score phases
-        halfTime: ht ? [parseInt(ht[0]), parseInt(ht[1])] : null,
-        fullTime: ft ? [parseInt(ft[0]), parseInt(ft[1])] : null,
-        extraTime: et ? [parseInt(et[0]), parseInt(et[1])] : null,
-        penalties: pens ? [parseInt(pens[0]), parseInt(pens[1])] : null
-      };
-
-      // Push into state for standings calculation
-      const gfi=MID_TO_GFI[mid];
-      if(gfi){state.groups[gfi.g][gfi.fi].hs=String(hs);state.groups[gfi.g][gfi.fi].as=String(as);}
-      else if(mid>=73){state.ko[mid].hs=String(hs);state.ko[mid].as=String(as);}
-    });
-
-    setApiStatus('ok','✓ '+resultsCount+' results loaded');
-    const timeStr=new Date().toLocaleTimeString();
-    document.getElementById('last-updated').textContent='Updated: '+timeStr;
-
-    const saved=await saveToFirebase();
-    if(!saved){
-      setApiStatus('err','Scores loaded, but Firebase save failed');
-    }else{
-      setApiStatus('ok','✓ '+resultsCount+' results loaded and saved');
-    }
-    clearTimeout(autoTimer);
-    document.getElementById('auto-badge').style.display='none';
-    renderAll();
-    toast('✓ '+resultsCount+' results loaded','ok');
-  }catch(err){
-    setApiStatus('err','Parse error: '+err.message);
-    toast('Error processing data: '+err.message,'err');
-    console.error(err);
-  }finally{
-    btn.disabled=false;icon.className='';icon.textContent='🔄';
-  }
-}
-
-
-function setApiStatus(type,msg){
-  const el=document.getElementById('api-status-badge');
-  el.className='api-status api-'+type;el.textContent=msg;
-}
-
-// ════════════════════════════════════════════════
-// STANDINGS & KO (same logic as before)
-// ════════════════════════════════════════════════
-function calcStandings(g){
-  const teams=GROUPS[g].map((n,i)=>({name:n,idx:i,p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0}));
-  GF.forEach(([hi,ai],fi)=>{
-    const sc=getScore(G_MIDS[g][fi]);if(!sc)return;
-    const hs=parseInt(sc.hs),as=parseInt(sc.as);if(isNaN(hs)||isNaN(as))return;
-    const h=teams[hi],a=teams[ai];
-    h.p++;a.p++;h.gf+=hs;h.ga+=as;h.gd+=hs-as;a.gf+=as;a.ga+=hs;a.gd+=as-hs;
-    if(hs>as){h.w++;h.pts+=3;a.l++;}else if(hs<as){a.w++;a.pts+=3;h.l++;}else{h.d++;h.pts++;a.d++;a.pts++;}
-  });
-  teams.sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf||a.name.localeCompare(b.name));
-  return teams;
-}
-function getAdvancing(){
-  const firsts={},seconds={},thirds=[];
-  Object.keys(GROUPS).forEach(g=>{const st=calcStandings(g);firsts[g]=st[0];seconds[g]=st[1];thirds.push({...st[2],group:g});});
-  thirds.sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf);
-  return{firsts,seconds,thirds:thirds.slice(0,8)};
-}
-
-function koWin(id){
-  const d = apiData[id];
-
-  // Penalty shoot-out takes priority.
-  if(d && d.penalties && d.penalties.length === 2){
-    const hp = parseInt(d.penalties[0]);
-    const ap = parseInt(d.penalties[1]);
-
-    if(!isNaN(hp) && !isNaN(ap)){
-      if(hp > ap) return 0;
-      if(ap > hp) return 1;
-    }
-  }
-
-  // Extra time decides knockout matches when present.
-  if(d && d.extraTime && d.extraTime.length === 2){
-    const he = parseInt(d.extraTime[0]);
-    const ae = parseInt(d.extraTime[1]);
-
-    if(!isNaN(he) && !isNaN(ae)){
-      if(he > ae) return 0;
-      if(ae > he) return 1;
-    }
-  }
-
-  // Then normal full-time score.
-  const sc = getScore(id);
-  if(!sc) return null;
-
-  const hs = parseInt(sc.hs);
-  const as = parseInt(sc.as);
-
-  if(isNaN(hs) || isNaN(as)) return null;
-
-  if(hs > as) return 0;
-  if(as > hs) return 1;
-
-  return null;
-}
-
-function winnerSide(mid){
-  // Knockout matches should use the real knockout winner:
-  // penalties first, then extra time, then full time.
-  if(mid >= 73){
-    const w = koWin(mid);
-    if(w === 0) return 'home';
-    if(w === 1) return 'away';
-    return null;
-  }
-
-  // Group matches only use normal score.
-  const sc = getScore(mid);
-  if(!sc) return null;
-
-  const hs = parseInt(sc.hs);
-  const as = parseInt(sc.as);
-
-  if(isNaN(hs) || isNaN(as)) return null;
-
-  if(hs > as) return 'home';
-  if(as > hs) return 'away';
-
-  return null;
-}
-  
-function pairWinner(id,pairs){
-  const p = pairs[id] || ['?','?'];
-  const w = koWin(id);
-  return w === null ? '?' : (w === 0 ? p[0] : p[1]);
-}
-
-function pairLoser(id,pairs){
-  const p = pairs[id] || ['?','?'];
-  const w = koWin(id);
-  return w === null ? '?' : (w === 0 ? p[1] : p[0]);
-}
-
-function cleanTeamName(t){
-  if(t === undefined || t === null) return '';
-  if(typeof t === 'string'){
-    const s = t.trim();
-    if(!s || s === 'undefined' || s === 'null') return '';
-    return s;
-  }
-
-  if(typeof t === 'object'){
-    return cleanTeamName(
-      t.name ||
-      t.team ||
-      t.title ||
-      t.country ||
-      t.label ||
-      ''
-    );
-  }
-
-  return cleanTeamName(String(t));
-}
-
-function isRealTeamName(t){
-  return cleanTeamName(t) !== '';
-}
-
-function r32Pairs(){
-  const {firsts:f, seconds:s, thirds:t} = getAdvancing();
-
-  const fn = g => f[g] ? f[g].name : '?';
-  const sn = g => s[g] ? s[g].name : '?';
-
-  const apiPair = (mid, fallback) => {
-    const d = apiData[mid];
-
-    if(d && isRealTeamName(d.homeTeam) && isRealTeamName(d.awayTeam)){
-      return [cleanTeamName(d.homeTeam), cleanTeamName(d.awayTeam)];
     }
 
-    return fallback;
-  };
+    function updateWeekDisplay() {
+      const info = getCurrentWeekInfo();
+      const locked = isLockedNow();
+      const readOnly = isReadOnlyView();
 
-  const usedThirdGroups = new Set();
-
-  function bestThirdFrom(allowedGroups, label){
-    const candidates = t.filter(team =>
-      team &&
-      team.group &&
-      allowedGroups.includes(team.group) &&
-      !usedThirdGroups.has(team.group)
-    );
-
-    if(!candidates.length) return label || 'Best 3rd';
-
-    const picked = candidates[0];
-    usedThirdGroups.add(picked.group);
-    return picked.name;
-  }
-
-  return {
-    73: apiPair(73, [sn('A'), sn('B')]),
-    74: apiPair(74, [fn('E'), bestThirdFrom(['A','B','C','D','F'], '3rd A/B/C/D/F')]),
-    75: apiPair(75, [fn('F'), sn('C')]),
-    76: apiPair(76, [fn('C'), sn('F')]),
-    77: apiPair(77, [fn('I'), bestThirdFrom(['C','D','F','G','H'], '3rd C/D/F/G/H')]),
-    78: apiPair(78, [sn('E'), sn('I')]),
-    79: apiPair(79, [fn('A'), bestThirdFrom(['C','E','F','H','I'], '3rd C/E/F/H/I')]),
-    80: apiPair(80, [fn('L'), bestThirdFrom(['E','H','I','J','K'], '3rd E/H/I/J/K')]),
-    81: apiPair(81, [fn('D'), bestThirdFrom(['B','E','F','I','J'], '3rd B/E/F/I/J')]),
-    82: apiPair(82, [fn('G'), bestThirdFrom(['A','E','H','I','J'], '3rd A/E/H/I/J')]),
-    83: apiPair(83, [sn('K'), sn('L')]),
-    84: apiPair(84, [fn('H'), sn('J')]),
-    85: apiPair(85, [fn('B'), bestThirdFrom(['A','C','E','F','G'], '3rd A/C/E/F/G')]),
-    86: apiPair(86, [fn('J'), sn('H')]),
-    87: apiPair(87, [fn('K'), bestThirdFrom(['D','E','I','J','L'], '3rd D/E/I/J/L')]),
-    88: apiPair(88, [sn('D'), sn('G')])
-  };
-}
-  
-function r16Pairs(p32){return{89:[pairWinner(74,p32),pairWinner(77,p32)],90:[pairWinner(73,p32),pairWinner(75,p32)],91:[pairWinner(76,p32),pairWinner(78,p32)],92:[pairWinner(79,p32),pairWinner(80,p32)],93:[pairWinner(83,p32),pairWinner(84,p32)],94:[pairWinner(81,p32),pairWinner(82,p32)],95:[pairWinner(86,p32),pairWinner(88,p32)],96:[pairWinner(85,p32),pairWinner(87,p32)]};}
-function qfPairs(p16){return{97:[pairWinner(89,p16),pairWinner(90,p16)],98:[pairWinner(93,p16),pairWinner(94,p16)],99:[pairWinner(91,p16),pairWinner(92,p16)],100:[pairWinner(95,p16),pairWinner(96,p16)]};}
-function sfPairs(pqf){return{101:[pairWinner(97,pqf),pairWinner(98,pqf)],102:[pairWinner(99,pqf),pairWinner(100,pqf)]};}
-function allPairs(){const p32=r32Pairs(),p16=r16Pairs(p32),pqf=qfPairs(p16),psf=sfPairs(pqf);return{p32,p16,pqf,psf};}
-function resolveTeams(mid){
-  if(apiData[mid] && apiData[mid].homeTeam && apiData[mid].awayTeam){
-    return [apiData[mid].homeTeam, apiData[mid].awayTeam];
-  }
-
-  const {p32,p16,pqf,psf}=allPairs();
-  if(p32[mid])return p32[mid];
-  if(p16[mid])return p16[mid];
-  if(pqf[mid])return pqf[mid];
-  if(psf[mid])return psf[mid];
-
-  if(mid===103){
-    const psf2=sfPairs(qfPairs(r16Pairs(r32Pairs())));
-    return[pairLoser(101,psf2),pairLoser(102,psf2)];
-  }
-
-  if(mid===104){
-    const psf2=sfPairs(qfPairs(r16Pairs(r32Pairs())));
-    return[pairWinner(101,psf2),pairWinner(102,psf2)];
-  }
-
-  return['?','?'];
-}
-// ════════════════════════════════════════════════
-// HELPERS
-// ════════════════════════════════════════════════
-function flag(t){const c=FLAGS[t];if(!c)return'';return`<img class="flag" src="https://flagcdn.com/w40/${c}.png" alt="" onerror="this.style.display='none'">`;}
-function fmtDate(d){return new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
-function esc(s){return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-function statusBadge(mid){
-  const d = apiData[mid];
-  if(!d) return '';
-
-  if(d.isLive){
-    return `<span class="live-badge">LIVE${d.elapsed ? ' ' + d.elapsed + "'" : ''}</span>`;
-  }
-
-  if(d.isDone){
-    const label = d.status || (d.penalties ? 'PENS' : d.extraTime ? 'AET' : 'FT');
-    return `<span class="ft-badge">${label}</span>`;
-  }
-
-  return '';
-}
-
-// Scorer management
-function addScorer(mid,side){if(!state.scorers[mid])state.scorers[mid]={home:[],away:[]};state.scorers[mid][side].push({name:'',min:''});rebuildScorerRows(mid,side);}
-function removeScorer(mid,side,idx){state.scorers[mid][side].splice(idx,1);rebuildScorerRows(mid,side);refreshPills(mid);}
-function onScorerName(mid,side,idx,val){if(state.scorers[mid])state.scorers[mid][side][idx].name=val;refreshPills(mid);}
-function onScorerMin(mid,side,idx,val){if(state.scorers[mid])state.scorers[mid][side][idx].min=val;refreshPills(mid);}
-function rebuildScorerRows(mid,side){const c=document.getElementById('scr-'+mid+'-'+side);if(c)c.innerHTML=scorerRowsHTML(mid,side);}
-function scorerRowsHTML(mid,side){
-  const api=apiData[mid]&&apiData[mid][side+'Scorers']&&apiData[mid][side+'Scorers'].length;
-  if(api)return apiData[mid][side+'Scorers'].map(s=>`<div class="scorer-row"><input class="sn-in" readonly value="${esc(s.name)}"><input class="sm-in" readonly value="${esc(s.min)}"><span style="font-size:9px;color:#3ad070;margin-left:2px;">⚡</span></div>`).join('');
-  return(state.scorers[mid]&&state.scorers[mid][side]||[]).map((s,i)=>`<div class="scorer-row"><input class="sn-in" type="text" placeholder="Name" value="${esc(s.name||'')}" oninput="onScorerName(${mid},'${side}',${i},this.value)"><input class="sm-in" type="number" min="1" max="120" placeholder="min" value="${esc(s.min||'')}" oninput="onScorerMin(${mid},'${side}',${i},this.value)">'<button class="scorer-del" onclick="removeScorer(${mid},'${side}',${i})">✕</button></div>`).join('');
-}
-function pillsHTML(mid){
-  const hS=getScorers(mid,'home'),aS=getScorers(mid,'away');
-  if(!hS.length&&!aS.length)return'';
-  const fmt=s=>`<span class="scorer-pill${s.fromApi?' api-data':''}">⚽ ${s.name}${s.min?` ${s.min}'`:''}</span>`;
-  return hS.map(fmt).join('')+(aS.length?'<span style="flex:1;min-width:8px"></span>'+aS.map(fmt).join(''):'');
-}
-function refreshPills(mid){const el=document.getElementById('spills-'+mid);if(el)el.innerHTML=pillsHTML(mid);}
-
-// ════════════════════════════════════════════════
-// BUILD MATCH CARD
-// ════════════════════════════════════════════════
-function buildMC(mid,homeTeam,awayTeam,opts={}){
-  const{matchLabel='',metaLine='',roundCls='',badgeLabel='',tbd=false}=opts;
-  homeTeam = cleanTeamName(homeTeam) || '?';
-  awayTeam = cleanTeamName(awayTeam) || '?';
-  const sc=getScore(mid);
-  const w = winnerSide(mid);
-  const hS=getScorers(mid,'home'),aS=getScorers(mid,'away');
-  const hasPills=hS.length||aS.length;
-  const homeTbd = !homeTeam || homeTeam === '?' || tbd;
-  const awayTbd = !awayTeam || awayTeam === '?' || tbd;
-  const wonH=w==='home'?' won':'',wonA=w==='away'?' won':'';
-  const isLive=apiData[mid]&&apiData[mid].isLive;
-  const fromApi=sc&&sc.fromApi;
-  const gfi=MID_TO_GFI[mid];
-  let hsVal='',asVal='';
-  if(gfi){const s=state.groups[gfi.g][gfi.fi];hsVal=s.hs;asVal=s.as;}
-  else if(state.ko[mid]){hsVal=state.ko[mid].hs;asVal=state.ko[mid].as;}
-  const d = apiData[mid] || {};
-  const dHs = sc ? sc.hs : hsVal;
-  const dAs = sc ? sc.as : asVal;
-
-  const ft = d.fullTime && d.fullTime.length === 2
-    ? d.fullTime
-    : (sc ? [dHs, dAs] : null);
-
-  const et = d.extraTime && d.extraTime.length === 2
-    ? d.extraTime
-    : null;
-
-  const pens = d.penalties && d.penalties.length === 2
-    ? d.penalties
-    : null;
-
-  // What appears as the main score
-  const mainScore = et || ft;
-
-  // What appears underneath
-  let subScoreText = '';
-
-  if(pens){
-    subScoreText = `
-      <span class="mc-pens-score">${pens[0]}:${pens[1]}</span>
-      <span class="mc-pens-label">pens</span>
-  `;
-  } else if(et && ft){
-    subScoreText = `
-      <span class="mc-pens-score">${ft[0]}:${ft[1]}</span>
-      <span class="mc-pens-label">ft</span>
-    `;
-  }
-
-  return`<div class="mc ${roundCls}${isLive?' live-match':''}" id="mc-${mid}">
-    <div class="mc-header" onclick="toggleMC(this.closest('.mc'))">
-      <span class="mc-num">${matchLabel}</span>
-      <div class="mc-teams-row">
-        <span class="mc-team-name h${homeTbd?' tbd':''}${wonH}">${homeTbd?'':(flag(homeTeam))}${homeTeam}</span>
-        <span class="mc-scorebox">
-          ${sc
-            ? `<span class="mc-score-stack">
-                 <span class="mc-main-score">
-                   <span class="mc-score-val">${mainScore[0]}</span>
-                   <span class="mc-score-sep">:</span>
-                   <span class="mc-score-val">${mainScore[1]}</span>
-               </span>
-               ${subScoreText}
-               ${et && !pens ? `<span class="mc-pens-label">aet</span>` : ''}
-             </span>`
-            : `<span class="mc-score-val no-score">vs</span>`
-          }
+      els.weekSummary.innerHTML = `
+        <span class="status ${locked ? "locked" : ""}">
+          ${locked ? "Locked" : "Open"}
         </span>
-        <span class="mc-team-name a${awayTbd?' tbd':''}${wonA}">${awayTbd?'':(flag(awayTeam))}${awayTeam}</span>
-      </div>
-      ${badgeLabel?`<span class="sc-badge ${BADGE_CLS[opts.round]||''}">${badgeLabel}</span>`:''}
-      ${statusBadge(mid)}
-      <span class="mc-chevron">▾</span>
-    </div>
-    ${metaLine?`<div class="mc-meta-row"><span>${metaLine}</span></div>`:''}
-    <div class="scorers-display" id="spills-${mid}" style="display:flex;flex-wrap:wrap;gap:3px;">${hasPills?pillsHTML(mid):''}</div>
-    <div class="mc-expand">
-      ${fromApi?`<div class="api-source-note">⚡ Live data from API-Football${useFirebase?' · synced via Firebase':''}</div>`:''}
-      <div class="expand-score-row">
-        <span class="expand-team-label">${homeTbd?'':(flag(homeTeam))}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px">${homeTeam}</span></span>
-        <input class="score-in" type="number" min="0" max="99" value="${mainScore ? mainScore[0] : dHs}" placeholder="-" ${fromApi?'readonly':''} oninput="onScoreChange(${mid},'hs',this.value)">
-        <span class="score-dash">:</span>
-        <input class="score-in" type="number" min="0" max="99" value="${mainScore ? mainScore[1] : dAs}" placeholder="-" ${fromApi?'readonly':''} oninput="onScoreChange(${mid},'as',this.value)">
-        <span class="expand-team-label" style="justify-content:flex-end">${awayTbd?'':(flag(awayTeam))}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px">${awayTeam}</span></span>
-      </div>
-        
-      ${et && ft ? `<div class="api-source-note">After extra time: ${et[0]}:${et[1]} · Full time: ${ft[0]}:${ft[1]}</div>` : ''}
-      ${pens ? `<div class="api-source-note">Penalties: ${pens[0]}:${pens[1]}</div>` : ''}
-      
-      <div class="scorers-section">
-        <div class="scorers-col"><div class="scorers-col-label">⚽ ${homeTeam}</div><div id="scr-${mid}-home">${scorerRowsHTML(mid,'home')}</div>${fromApi?'':`<button class="add-scorer" onclick="addScorer(${mid},'home')">+ Add scorer</button>`}</div>
-        <div class="scorers-col"><div class="scorers-col-label">⚽ ${awayTeam}</div><div id="scr-${mid}-away">${scorerRowsHTML(mid,'away')}</div>${fromApi?'':`<button class="add-scorer" onclick="addScorer(${mid},'away')">+ Add scorer</button>`}</div>
-      </div>
-    </div>
-  </div>`;
-}
+        <span> Current week: ${info.weekId}. Event window: ${info.windowLabel}.</span>
+      `;
 
-function onScoreChange(mid,side,val){
-  const gfi=MID_TO_GFI[mid];
-  if(gfi)state.groups[gfi.g][gfi.fi][side]=val;
-  else state.ko[mid][side]=val;
-  renderGroups();renderKO();
-  if(document.getElementById('sec-schedule').classList.contains('active'))renderSchedule();
-}
-function toggleMC(el){
-  const wasOpen=el.classList.contains('open');
-  const parent=el.closest('.fix-wrap,.ko-match-wrap,.sch-cards,.final-wrap');
-  if(parent)parent.querySelectorAll('.mc.open').forEach(x=>{if(x!==el)x.classList.remove('open');});
-  el.classList.toggle('open',!wasOpen);
-}
+      els.lockMessage.textContent = currentIsAdmin
+        ? `Admin mode: viewing week ${selectedWeekId}. You can update actual results and winners for any event.`
+        : readOnly
+          ? `Viewing week ${selectedWeekId}. Event entries and predictions are read-only. Missing winners and actual results can still be saved by the event owner.`
+          : locked
+            ? "Entries are locked. Winner selection and actual result entry are now open for event owners."
+            : `Entries are open until ${info.lockLabel}. Winner selection and actual result entry open after Friday at 1700 New Zealand Time.`;
 
-// ════════════════════════════════════════════════
-// RENDER
-// ════════════════════════════════════════════════
-function renderGroups(){
-  const cont=document.getElementById('groups-container');
-  const openCards=new Set([...cont.querySelectorAll('.mc.open')].map(el=>el.id));
-  cont.innerHTML='';
-  Object.keys(GROUPS).forEach(g=>{
-    const st=calcStandings(g);
-    const div=document.createElement('div');div.className='g-card';
-    const qcls=['q1','q2','q3',''],rcls=['r1','r2','r3','r4'];
-    let html=`<div class="g-head"><span class="g-letter">Group ${g}</span><span class="g-meta">${GROUPS[g].join(' · ')}</span></div>`;
-    html+=`<table class="std-table"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr></thead><tbody>`;
-    st.forEach((t,i)=>{html+=`<tr class="${qcls[i]}"><td><span class="rank ${rcls[i]}">${i+1}</span>${flag(t.name)}${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf}</td><td>${t.ga}</td><td>${t.gd}</td><td style="font-weight:700;color:#fff">${t.pts}</td></tr>`;});
-    html+=`</tbody></table><div class="fix-wrap">`;
-    G_MIDS[g].forEach((mid,fi)=>{
-      const[hi,ai]=GF[fi];const m=MATCHES.find(x=>x.id===mid);
-      html+=buildMC(mid,GROUPS[g][hi],GROUPS[g][ai],{matchLabel:`M${mid}`,metaLine:m?`M${mid} · ${m.date.slice(5).replace('-','/')} · ${m.time} · ${m.city}`:'',round:'gs'});
+      els.statusBadge.textContent = readOnly ? "Read-only" : locked ? "Locked" : "Open";
+      els.statusBadge.className = readOnly ? "status complete" : locked ? "status locked" : "status";
+      els.historyNotice.classList.toggle("hidden", !readOnly);
+      els.saveEventButton.disabled = locked || readOnly;
+    }
+
+    async function ensureWeekDocument() {
+      const info = getCurrentWeekInfo();
+      const weekRef = doc(db, "weeks", info.weekId);
+      const snap = await getDoc(weekRef);
+      const existing = snap.exists() ? snap.data() : null;
+
+      if (
+        existing &&
+        existing.weekId === info.weekId &&
+        existing.lockLabel === info.lockLabel &&
+        existing.eventWindowLabel === info.windowLabel
+      ) {
+        return;
+      }
+
+      await setDoc(weekRef, {
+        weekId: info.weekId,
+        lockLabel: info.lockLabel,
+        eventWindowLabel: info.windowLabel,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    async function loadCurrentPlayer(user) {
+      const snap = await getDoc(doc(db, "players", user.uid));
+      if (!snap.exists()) return null;
+      return { id: user.uid, ...snap.data() };
+    }
+
+    async function loadCurrentAdminStatus(user) {
+      if (!user) return false;
+      const snap = await getDoc(doc(db, "admins", user.uid));
+      return snap.exists() && snap.data().active === true;
+    }
+
+    function canManageEvent(event) {
+      return Boolean(
+        currentUser &&
+        event &&
+        (currentIsAdmin || event.ownerPlayerId === currentUser.uid)
+      );
+    }
+
+    function canEditResultsForEvent(event) {
+      return canManageEvent(event) && (currentIsAdmin || winnerSelectionIsOpen());
+    }
+
+    function startRealtimeListeners() {
+      stopRealtimeListeners();
+      selectedWeekId = selectedWeekId || currentWeekId();
+
+      unsubscribePlayers = onSnapshot(collection(db, "players"), snapshot => {
+        players = snapshot.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => String(a.nickname || a.fullName).localeCompare(String(b.nickname || b.fullName)));
+        collectSportsmasterTieBreakAttempts();
+        render();
+      });
+
+      unsubscribeWeeks = onSnapshot(collection(db, "weeks"), snapshot => {
+        const currentId = currentWeekId();
+        weeks = snapshot.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => String(b.weekId || b.id).localeCompare(String(a.weekId || a.id)));
+
+        if (!weeks.some(week => (week.weekId || week.id) === currentId)) {
+          weeks.unshift({ id: currentId, weekId: currentId });
+        }
+
+        if (!selectedWeekId || !weeks.some(week => (week.weekId || week.id) === selectedWeekId)) {
+          selectedWeekId = currentId;
+          startEventsListener();
+        }
+
+        renderWeekSelector();
+        refreshAllTimeScores();
+        render();
+      });
+
+      startEventsListener();
+    }
+
+    function startEventsListener() {
+      if (!selectedWeekId) selectedWeekId = currentWeekId();
+      if (unsubscribeEvents) unsubscribeEvents();
+      if (unsubscribeSportsmasterTieBreak) unsubscribeSportsmasterTieBreak();
+      for (const unsub of unsubscribePredictions) unsub();
+      unsubscribePredictions = [];
+      predictionsByEvent = {};
+      sportsmasterTieBreakAttempts = [];
+      predictionDrafts.clear();
+      tieBreakDrafts.clear();
+      actualResultDrafts.clear();
+      sportsmasterTieBreakTarget = null;
+      miniGameRunning = false;
+      miniGameStartedAt = null;
+
+      unsubscribeEvents = onSnapshot(collection(db, "weeks", selectedWeekId, "events"), snapshot => {
+        events = snapshot.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => String(a.ownerNickname || "").localeCompare(String(b.ownerNickname || "")));
+        listenToPredictions();
+        render();
+      });
+
+      startSportsmasterTieBreakListener();
+    }
+
+    async function ensureSelectedWeekTieBreakTarget() {
+      if (!selectedWeekId) return;
+
+      try {
+        const weekRef = doc(db, "weeks", selectedWeekId);
+        const snap = await getDoc(weekRef);
+        const existingTarget = snap.exists() ? snap.data().sportsmasterTieBreakTarget : null;
+        sportsmasterTieBreakTarget = existingTarget || deterministicWholeSecondsFromWeek(selectedWeekId, 5, 12);
+      } catch (error) {
+        sportsmasterTieBreakTarget = deterministicWholeSecondsFromWeek(selectedWeekId, 5, 12);
+      }
+    }
+
+    async function startSportsmasterTieBreakListener() {
+      if (!selectedWeekId) return;
+      if (unsubscribeSportsmasterTieBreak) unsubscribeSportsmasterTieBreak();
+      unsubscribeSportsmasterTieBreak = null;
+
+      await ensureSelectedWeekTieBreakTarget();
+      collectSportsmasterTieBreakAttempts();
+      renderSportsmasterTieBreak();
+    }
+
+    function listenToPredictions() {
+      for (const unsub of unsubscribePredictions) unsub();
+      unsubscribePredictions = [];
+      predictionsByEvent = {};
+
+      for (const event of events) {
+        const unsub = onSnapshot(
+          collection(db, "weeks", selectedWeekId, "events", event.id, "predictions"),
+          snapshot => {
+            predictionsByEvent[event.id] = snapshot.docs.map(d => ({
+              id: d.id,
+              ...d.data()
+            }));
+            render();
+          }
+        );
+        unsubscribePredictions.push(unsub);
+      }
+    }
+
+    function stopRealtimeListeners() {
+      if (unsubscribePlayers) unsubscribePlayers();
+      if (unsubscribeWeeks) unsubscribeWeeks();
+      if (unsubscribeEvents) unsubscribeEvents();
+      if (unsubscribeSportsmasterTieBreak) unsubscribeSportsmasterTieBreak();
+      for (const unsub of unsubscribePredictions) unsub();
+
+      unsubscribePlayers = null;
+      unsubscribeWeeks = null;
+      unsubscribeEvents = null;
+      unsubscribeSportsmasterTieBreak = null;
+      unsubscribePredictions = [];
+    }
+
+    async function refreshAllTimeScores() {
+      const totals = new Map();
+      for (const player of players) totals.set(player.id, 0);
+
+      const weekSnaps = await getDocs(collection(db, "weeks"));
+      for (const weekSnap of weekSnaps.docs) {
+        const eventSnaps = await getDocs(collection(db, "weeks", weekSnap.id, "events"));
+        for (const eventSnap of eventSnaps.docs) {
+          const event = eventSnap.data();
+          if (event.winnerPlayerId) {
+            totals.set(event.winnerPlayerId, (totals.get(event.winnerPlayerId) || 0) + 1);
+          }
+        }
+      }
+
+      allTimeScores = totals;
+      renderLeaderboard();
+    }
+
+    async function refreshWeekIfNeeded() {
+      const latestWeekId = currentWeekId();
+      await ensureWeekDocument();
+
+      if (!currentUser || !currentPlayer) {
+        updateWeekDisplay();
+        return;
+      }
+
+      if (viewingCurrentWeek() && selectedWeekId !== latestWeekId) {
+        selectedWeekId = latestWeekId;
+        startEventsListener();
+      }
+
+      renderWeekSelector();
+      updateWeekDisplay();
+    }
+
+    async function savePrediction(eventId, predictionValue, tieBreakAnswerValue = "") {
+      if (!currentUser || !currentPlayer) return;
+      if (isReadOnlyView()) throw new Error("Previous weeks are read-only.");
+      if (isLockedNow()) throw new Error("Entries are locked for this week.");
+
+      const event = events.find(item => item.id === eventId);
+      const clean = String(predictionValue || "").trim();
+      const cleanTieBreak = eventUsesTextTieBreak(event)
+        ? String(tieBreakAnswerValue || "").trim()
+        : "";
+      if (!clean) throw new Error("Please enter a prediction.");
+      if (eventUsesTextTieBreak(event) && !cleanTieBreak) throw new Error("Please enter a tie-break answer.");
+
+      const eventRef = doc(db, "weeks", selectedWeekId, "events", eventId);
+      const predictionsRef = collection(eventRef, "predictions");
+      const myPredictionRef = doc(predictionsRef, currentUser.uid);
+
+      await runTransaction(db, async transaction => {
+        const predictionSnaps = await getDocs(predictionsRef);
+        const hasTieBreak = eventHasTieBreak(event);
+        const usesTextTieBreak = eventUsesTextTieBreak(event);
+        const usesStopTimerTieBreak = eventUsesStopTimerTieBreak(event);
+        const duplicate = predictionSnaps.docs.some(predictionDoc => {
+          if (predictionDoc.id === currentUser.uid) return false;
+          const existing = predictionDoc.data();
+          const samePrediction = normalisePrediction(existing.prediction) === normalisePrediction(clean);
+
+          if (!hasTieBreak) {
+            return samePrediction;
+          }
+
+          if (usesStopTimerTieBreak) {
+            return false;
+          }
+
+          if (usesTextTieBreak) {
+            const sameTieBreak = normalisePrediction(existing.tieBreakAnswer) === normalisePrediction(cleanTieBreak);
+            return samePrediction && sameTieBreak;
+          }
+
+          return false;
+        });
+
+        if (duplicate) {
+          if (usesTextTieBreak) {
+            throw new Error("That prediction and tie-break answer combination has already been used for this event. Keep the main prediction if you want, but choose a different tie-break answer.");
+          }
+
+          throw new Error("That prediction has already been used for this event. Add a tie-breaker to the event if shared main predictions should be allowed.");
+        }
+
+        transaction.set(myPredictionRef, {
+          playerId: currentUser.uid,
+          playerNickname: currentPlayer.nickname,
+          prediction: clean,
+          tieBreakAnswer: cleanTieBreak,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      });
+    }
+
+    async function markWinner(eventId, winnerPlayerId) {
+      if (!currentUser) return;
+
+      const event = events.find(item => item.id === eventId);
+      if (!canEditResultsForEvent(event)) {
+        throw new Error("Only the event owner can select the winner after Friday 1700 NZT. Admins can manage any event.");
+      }
+
+      const prediction = (predictionsByEvent[eventId] || []).find(item => item.playerId === winnerPlayerId);
+      if (!prediction) throw new Error("Winner prediction was not found.");
+
+      const eventRef = doc(db, "weeks", selectedWeekId, "events", eventId);
+      const winningTieBreakAnswer = eventUsesStopTimerTieBreak(event)
+        ? formatStopTimerAttemptForPlayer(winnerPlayerId)
+        : prediction.tieBreakAnswer || "";
+
+      await runTransaction(db, async transaction => {
+        const eventSnap = await transaction.get(eventRef);
+        if (!eventSnap.exists()) throw new Error("Event was not found.");
+
+        const existingWinner = eventSnap.data().winnerPlayerId;
+        if (existingWinner && !currentIsAdmin) {
+          throw new Error("A winner has already been recorded for this event. Ask an admin to change it.");
+        }
+
+        transaction.set(eventRef, {
+          winnerPlayerId,
+          winningPrediction: prediction.prediction,
+          winningTieBreakAnswer,
+          completedAt: serverTimestamp(),
+          winnerUpdatedAt: serverTimestamp(),
+          winnerUpdatedBy: currentUser.uid,
+          winnerUpdatedByAdmin: currentIsAdmin === true
+        }, { merge: true });
+      });
+
+      await refreshAllTimeScores();
+    }
+
+    async function saveActualResult(eventId, actualResultValue) {
+      if (!currentUser) return;
+
+      const event = events.find(item => item.id === eventId);
+      if (!canEditResultsForEvent(event)) {
+        throw new Error("Only the event owner can save the actual result after Friday 1700 NZT. Admins can manage any event.");
+      }
+
+      const cleanResult = String(actualResultValue || "").trim();
+      if (!cleanResult) throw new Error("Please enter the actual result.");
+
+      await setDoc(doc(db, "weeks", selectedWeekId, "events", eventId), {
+        actualResult: cleanResult,
+        resultUpdatedAt: serverTimestamp(),
+        resultUpdatedBy: currentUser.uid,
+        resultUpdatedByAdmin: currentIsAdmin === true
+      }, { merge: true });
+    }
+
+    function render() {
+      updateWeekDisplay();
+
+      if (!currentUser || !currentPlayer) return;
+
+      els.welcomeTitle.textContent = `Welcome, ${currentPlayer.nickname || currentPlayer.fullName}${currentIsAdmin ? " (admin)" : ""}`;
+      els.playerStatus.textContent = currentIsAdmin
+        ? "Admin mode is active. You can manage actual results and winners for any event."
+        : currentPlayer.active === false
+          ? "You are currently withdrawn."
+          : "You are active for the weekly challenge.";
+      if (els.adminBadge) els.adminBadge.classList.toggle("hidden", !currentIsAdmin);
+
+      els.withdrawButton.textContent = currentPlayer.active === false
+        ? "Rejoin this week"
+        : "Withdraw this week";
+
+      const locked = isLockedNow();
+      const readOnly = isReadOnlyView();
+
+      els.eventCard.classList.toggle("hidden", currentPlayer.active === false || readOnly);
+      els.gameCard.classList.remove("hidden");
+      els.sportsmasterTieBreakCard.classList.remove("hidden");
+      els.scoreCard.classList.remove("hidden");
+      els.withdrawButton.disabled = readOnly;
+
+      renderWeekSelector();
+      renderEventForm();
+      renderTable(locked, readOnly);
+      renderSportsmasterTieBreak();
+      renderLeaderboard();
+    }
+
+    function renderWeekSelector() {
+      if (!els.weekSelector) return;
+      const currentId = currentWeekId();
+      const seen = new Set();
+      const options = [];
+
+      for (const week of [{ id: currentId, weekId: currentId }, ...weeks]) {
+        const id = week.weekId || week.id;
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        const label = id === currentId ? `${id} (latest week)` : id;
+        options.push(`<option value="${escapeAttr(id)}" ${id === selectedWeekId ? "selected" : ""}>${escapeHtml(label)}</option>`);
+      }
+
+      els.weekSelector.innerHTML = options.join("");
+    }
+
+    function renderEventForm() {
+      const myEvent = events.find(event => event.ownerPlayerId === currentUser.uid);
+      const formHasFocus = els.eventForm.contains(document.activeElement);
+      const formKey = myEvent
+        ? `${selectedWeekId}|${myEvent.id}|${myEvent.updatedAt?.seconds || ""}|${myEvent.eventName || ""}|${myEvent.predictionFormat || ""}|${myEvent.tieBreakType || "none"}|${myEvent.tieBreakQuestion || ""}|${myEvent.tieBreakFormat || ""}`
+        : `${selectedWeekId}|empty`;
+
+      if (myEvent) {
+        els.saveEventButton.textContent = eventFormDirty ? "Update event" : "Update saved event";
+      } else {
+        els.saveEventButton.textContent = eventFormDirty ? "Save new event" : "Save my event";
+      }
+
+      /*
+        Do not reset the form while the player is typing. Realtime Firestore
+        snapshots can call render() repeatedly, and resetting here would wipe
+        an in-progress event before it has been saved.
+      */
+      if (eventFormDirty || formHasFocus) return;
+
+      if (eventFormLoadedKey === formKey) return;
+
+      if (!myEvent) {
+        els.eventForm.reset();
+        els.tieBreakType.value = "none";
+        toggleTieBreakDetails();
+        els.saveEventButton.textContent = "Save my event";
+        if (!els.eventMessage.classList.contains("error")) showMessage(els.eventMessage, "No event saved yet for this week.", "");
+        eventFormLoadedKey = formKey;
+        return;
+      }
+
+      els.sport.value = myEvent.sport || "";
+      els.eventName.value = myEvent.eventName || "";
+      els.eventLink.value = myEvent.eventLink || "";
+      els.eventStartAt.value = myEvent.eventStartAt || "";
+      els.challengeDescription.value = myEvent.challengeDescription || "";
+      els.predictionFormat.value = myEvent.predictionFormat || "";
+      els.tieBreakType.value = myEvent.tieBreakType || "none";
+      els.tieBreakQuestion.value = myEvent.tieBreakQuestion || "";
+      els.tieBreakFormat.value = myEvent.tieBreakFormat || "";
+      toggleTieBreakDetails();
+      els.saveEventButton.textContent = "Update saved event";
+      if (!els.eventMessage.classList.contains("error")) {
+        showMessage(els.eventMessage, "Event saved. Any further changes will update this event.", "success");
+      }
+      eventFormLoadedKey = formKey;
+    }
+
+    function renderTable(locked, readOnly) {
+      captureTableDrafts();
+      els.emptyGameNotice.classList.toggle("hidden", events.length > 0);
+      const visiblePlayers = readOnly ? players : players.filter(player => player.active !== false);
+      const showPredictionInputRow = currentUser && currentPlayer && currentPlayer.active !== false && !readOnly && !locked;
+
+      els.tableHead.innerHTML = `
+        <tr>
+          <th>Field</th>
+          ${events.map(event => `<th>${escapeHtml(event.ownerNickname || "Player")}</th>`).join("")}
+        </tr>
+      `;
+
+      const rows = [];
+
+      rows.push(`
+        <tr>
+          <td>Sport</td>
+          ${events.map(event => `<td>${escapeHtml(event.sport || "")}</td>`).join("")}
+        </tr>
+      `);
+
+      rows.push(`
+        <tr>
+          <td>Event</td>
+          ${events.map(event => `<td>${escapeHtml(event.eventName || "")}</td>`).join("")}
+        </tr>
+      `);
+
+      rows.push(`
+        <tr>
+          <td>Link</td>
+          ${events.map(event => `
+            <td>
+              ${event.eventLink ? `<a href="${escapeAttr(event.eventLink)}" target="_blank" rel="noopener">Open event</a>` : ""}
+            </td>
+          `).join("")}
+        </tr>
+      `);
+
+      rows.push(`
+        <tr>
+          <td>Challenge</td>
+          ${events.map(event => `<td>${escapeHtml(event.challengeDescription || "")}</td>`).join("")}
+        </tr>
+      `);
+
+      rows.push(`
+        <tr>
+          <td>Prediction format</td>
+          ${events.map(event => `<td>${escapeHtml(event.predictionFormat || "")}</td>`).join("")}
+        </tr>
+      `);
+
+      rows.push(`
+        <tr>
+          <td>Tie-break</td>
+          ${events.map(event => renderTieBreakInfoCell(event)).join("")}
+        </tr>
+      `);
+
+      rows.push(`
+        <tr>
+          <td>Actual result</td>
+          ${events.map(event => renderActualResultCell(event)).join("")}
+        </tr>
+      `);
+
+      rows.push(`
+        <tr>
+          <td>Winner</td>
+          ${events.map(event => renderWinnerCell(event, readOnly)).join("")}
+        </tr>
+      `);
+
+      if (showPredictionInputRow) {
+        rows.push(`
+          <tr class="prediction-entry-row">
+            <td>Prediction</td>
+            ${events.map(event => renderPredictionInputCell(event, locked)).join("")}
+          </tr>
+        `);
+      }
+
+      for (const player of visiblePlayers) {
+        rows.push(`
+          <tr>
+            <td>${escapeHtml(player.nickname || player.fullName || "Player")}</td>
+            ${events.map(event => renderPredictionDisplayCell(event, player, readOnly)).join("")}
+          </tr>
+        `);
+      }
+
+      els.tableBody.innerHTML = rows.join("");
+      attachPredictionHandlers();
+      attachWinnerHandlers();
+      attachResultHandlers();
+    }
+
+    function renderTieBreakInfoCell(event) {
+      if (!eventHasTieBreak(event)) {
+        return `<td><span class="muted">None</span></td>`;
+      }
+
+      if (eventUsesStopTimerTieBreak(event)) {
+        return `
+          <td>
+            <strong>Stop the Timer</strong><br />
+            <span class="format-hint">Uses each player's Sports Master Stop the Timer result for this week. No separate tie-break answer is required.</span>
+          </td>
+        `;
+      }
+
+      return `
+        <td>
+          <strong>Tie-break answer</strong><br />
+          ${escapeHtml(event.tieBreakQuestion || "")}
+          ${event.tieBreakFormat ? `<span class="format-hint">Format: ${escapeHtml(event.tieBreakFormat)}</span>` : ""}
+        </td>
+      `;
+    }
+
+    function getPredictionForPlayer(event, playerId) {
+      const predictions = predictionsByEvent[event.id] || [];
+      return predictions.find(item => item.playerId === playerId) || null;
+    }
+
+    function formatVisiblePrediction(event, prediction) {
+      if (!prediction) return "";
+      const tieBreakText = eventUsesTextTieBreak(event) && prediction.tieBreakAnswer
+        ? `<span class="format-hint">Tie-break: ${escapeHtml(prediction.tieBreakAnswer)}</span>`
+        : eventUsesStopTimerTieBreak(event)
+          ? `<span class="format-hint">Stop the Timer: ${escapeHtml(formatStopTimerAttemptForPlayer(prediction.playerId))}</span>`
+          : "";
+      return `${escapeHtml(prediction.prediction || "")}${tieBreakText}`;
+    }
+
+    function renderPredictionInputCell(event, locked) {
+      const existing = getPredictionForPlayer(event, currentUser.uid);
+      const tieBreakEnabled = eventHasTieBreak(event);
+      const usesTextTieBreak = eventUsesTextTieBreak(event);
+      const usesStopTimerTieBreak = eventUsesStopTimerTieBreak(event);
+      const key = draftKey(event.id, currentUser.uid);
+      const savedPrediction = existing ? existing.prediction || "" : "";
+      const savedTieBreak = existing ? existing.tieBreakAnswer || "" : "";
+      const predictionValue = predictionDrafts.has(key)
+        ? predictionDrafts.get(key)
+        : savedPrediction;
+      const tieBreakValue = tieBreakDrafts.has(key)
+        ? tieBreakDrafts.get(key)
+        : savedTieBreak;
+      const hasPredictionDraft = predictionDrafts.has(key) || (usesTextTieBreak && tieBreakDrafts.has(key));
+      const predictionHasUnsavedChanges = existing
+        ? predictionValue !== savedPrediction || (usesTextTieBreak && tieBreakValue !== savedTieBreak)
+        : hasPredictionDraft && (Boolean(predictionValue) || (usesTextTieBreak && Boolean(tieBreakValue)));
+      const predictionButtonLabel = existing ? "Update prediction" : "Save prediction";
+      const predictionStatusText = existing
+        ? predictionHasUnsavedChanges ? "Unsaved changes" : "Prediction saved"
+        : predictionHasUnsavedChanges ? "Not saved yet" : "";
+      const predictionStatusClass = existing
+        ? predictionHasUnsavedChanges ? "unsaved" : "saved"
+        : predictionHasUnsavedChanges ? "unsaved" : "empty";
+
+      return `
+        <td>
+          <div class="prediction-cell">
+            <input
+              data-event-id="${escapeAttr(event.id)}"
+              class="prediction-input"
+              value="${escapeAttr(predictionValue)}" 
+              placeholder="${escapeAttr(event.predictionFormat || "Your prediction")}" 
+              ${locked ? "disabled" : ""}
+            />
+            ${event.predictionFormat ? `<span class="format-hint">Format: ${escapeHtml(event.predictionFormat)}</span>` : ""}
+            ${usesTextTieBreak ? `
+              <input
+                data-event-id="${escapeAttr(event.id)}"
+                class="tie-break-answer-input"
+                value="${escapeAttr(tieBreakValue)}"
+                placeholder="${escapeAttr(event.tieBreakFormat || "Tie-break answer")}" 
+                ${locked ? "disabled" : ""}
+              />
+              <span class="format-hint">Tie-break: ${escapeHtml(event.tieBreakQuestion || "")}${event.tieBreakFormat ? ` Format: ${escapeHtml(event.tieBreakFormat)}` : ""}</span>
+            ` : usesStopTimerTieBreak ? `
+              <span class="format-hint">Tie-break: Stop the Timer. Your timer result for this week will be used, so no extra tie-break answer is needed.</span>
+            ` : ""}
+            <button
+              class="small save-prediction-button"
+              data-event-id="${escapeAttr(event.id)}"
+              ${locked ? "disabled" : ""}
+            >
+              ${escapeHtml(predictionButtonLabel)}
+            </button>
+            <span class="save-status prediction-save-status ${predictionStatusClass}">${escapeHtml(predictionStatusText)}</span>
+          </div>
+        </td>
+      `;
+    }
+
+    function renderPredictionDisplayCell(event, player, readOnly) {
+      const existing = getPredictionForPlayer(event, player.id);
+      const isMe = currentUser && player.id === currentUser.uid;
+      const winnerClass = event.winnerPlayerId === player.id ? "score-pill" : "";
+      const revealed = predictionsAreRevealed() || readOnly || Boolean(event.winnerPlayerId);
+
+      let displayValue = "";
+      if (existing) {
+        displayValue = (revealed || isMe)
+          ? formatVisiblePrediction(event, existing)
+          : "Prediction submitted";
+      }
+
+      return `
+        <td>
+          <span class="${winnerClass}">
+            ${displayValue}
+          </span>
+        </td>
+      `;
+    }
+
+    function renderActualResultCell(event) {
+      const canEditResult = canEditResultsForEvent(event);
+
+      if (!canEditResult) {
+        return `<td>${event.actualResult ? escapeHtml(event.actualResult) : `<span class="muted">Pending</span>`}</td>`;
+      }
+
+      const key = actualResultDraftKey(event.id);
+      const savedActualResult = event.actualResult || "";
+      const actualResultValue = actualResultDrafts.has(key)
+        ? actualResultDrafts.get(key)
+        : savedActualResult;
+      const actualResultHasUnsavedChanges = actualResultDrafts.has(key) && actualResultValue !== savedActualResult;
+      const actualResultButtonLabel = savedActualResult ? "Update actual result" : "Save actual result";
+      const actualResultStatusText = savedActualResult
+        ? actualResultHasUnsavedChanges ? "Unsaved changes" : "Actual result saved"
+        : actualResultHasUnsavedChanges || actualResultValue ? "Not saved yet" : "";
+      const actualResultStatusClass = savedActualResult
+        ? actualResultHasUnsavedChanges ? "unsaved" : "saved"
+        : actualResultStatusText ? "unsaved" : "empty";
+
+      return `
+        <td>
+          <div class="result-cell">
+            <input
+              class="actual-result-input"
+              data-event-id="${escapeAttr(event.id)}"
+              value="${escapeAttr(actualResultValue)}"
+              placeholder="Actual result, e.g. Hurricanes 20, Chiefs 12"
+            />
+            <button
+              class="small save-result-button"
+              data-event-id="${escapeAttr(event.id)}"
+              type="button"
+            >
+              ${escapeHtml(actualResultButtonLabel)}
+            </button>
+            <span class="save-status actual-result-save-status ${actualResultStatusClass}">${escapeHtml(actualResultStatusText)}</span>
+          </div>
+        </td>
+      `;
+    }
+
+    function renderWinnerCell(event, readOnly) {
+      const savedWinner = event.winnerPlayerId
+        ? `<span class="score-pill">${escapeHtml(getPlayerName(event.winnerPlayerId))}: ${escapeHtml(event.winningPrediction || "")}${event.winningTieBreakAnswer ? ` | TB: ${escapeHtml(event.winningTieBreakAnswer)}` : ""}</span>`
+        : "";
+
+      const canEditWinner = canEditResultsForEvent(event);
+      if (!canEditWinner) {
+        return `<td>${savedWinner || `<span class="muted">Pending</span>`}</td>`;
+      }
+
+      const selector = renderWinnerSelect(event, readOnly);
+      return `<td>${savedWinner ? `${savedWinner}<span class="format-hint">${currentIsAdmin ? "Admin override available below." : "Winner already selected."}</span>` : ""}${selector}</td>`;
+    }
+
+    function renderWinnerSelect(event, readOnly) {
+      if (!canEditResultsForEvent(event)) {
+        return currentIsAdmin
+          ? `<span class="muted">Admin result controls unavailable.</span>`
+          : `<span class="muted">Pending</span>`;
+      }
+
+      if (!currentIsAdmin && !winnerSelectionIsOpen()) {
+        return `<span class="muted">Winner selection opens after Friday 1700 NZT</span>`;
+      }
+
+      const predictions = predictionsByEvent[event.id] || [];
+      if (predictions.length === 0) return `<span class="muted">No predictions yet</span>`;
+
+      return `
+        <select class="winner-select" data-event-id="${escapeAttr(event.id)}">
+          <option value="">${event.winnerPlayerId ? "Change winner..." : "Choose winner..."}</option>
+          ${predictions.map(prediction => `
+            <option value="${escapeAttr(prediction.playerId)}" ${event.winnerPlayerId === prediction.playerId ? "selected" : ""}>
+              ${escapeHtml(prediction.playerNickname || getPlayerName(prediction.playerId))}: ${escapeHtml(prediction.prediction)}${eventUsesTextTieBreak(event) && prediction.tieBreakAnswer ? ` | TB: ${escapeHtml(prediction.tieBreakAnswer)}` : ""}${eventUsesStopTimerTieBreak(event) ? ` | Timer: ${escapeHtml(formatStopTimerAttemptForPlayer(prediction.playerId))}` : ""}
+            </option>
+          `).join("")}
+        </select>
+      `;
+    }
+
+    function getSportsmasterTieBreakAttemptForPlayer(playerId) {
+      return sportsmasterTieBreakAttempts.find(attempt => attempt.playerId === playerId || attempt.id === playerId) || null;
+    }
+
+    function formatStopTimerAttemptForPlayer(playerId) {
+      const attempt = getSportsmasterTieBreakAttemptForPlayer(playerId);
+      if (!attempt) return "not played";
+      return `${Number(attempt.resultSeconds || 0).toFixed(3)}s, diff ${Number(attempt.differenceSeconds || 0).toFixed(3)}s`;
+    }
+
+    function getMySportsmasterTieBreakAttempt() {
+      if (!currentUser) return null;
+      return getSportsmasterTieBreakAttemptForPlayer(currentUser.uid);
+    }
+
+    async function saveSportsmasterTieBreakAttempt(elapsedSeconds) {
+      if (!currentUser || !currentPlayer || !selectedWeekId) return;
+      if (!sportsmasterTieBreakTarget) throw new Error("Tie-break target is not ready yet.");
+
+      if (getMySportsmasterTieBreakAttempt()) {
+        throw new Error("You have already played this tie-break for the selected week.");
+      }
+
+      const roundedElapsed = Number(elapsedSeconds.toFixed(3));
+      const differenceSeconds = Number(Math.abs(roundedElapsed - Number(sportsmasterTieBreakTarget)).toFixed(3));
+      const attempt = {
+        targetSeconds: Number(sportsmasterTieBreakTarget),
+        resultSeconds: roundedElapsed,
+        differenceSeconds,
+        createdAtMs: Date.now()
+      };
+
+      await setDoc(doc(db, "players", currentUser.uid), {
+        sportsmasterTieBreakAttempts: {
+          [selectedWeekId]: attempt
+        },
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+
+      sportsmasterTieBreakAttempts = sportsmasterTieBreakAttempts
+        .filter(existingAttempt => existingAttempt.playerId !== currentUser.uid && existingAttempt.id !== currentUser.uid);
+      sportsmasterTieBreakAttempts.push({
+        id: currentUser.uid,
+        playerId: currentUser.uid,
+        playerNickname: currentPlayer.nickname || currentPlayer.fullName,
+        ...attempt
+      });
+    }
+
+    function startMiniGame() {
+      if (!currentUser || !currentPlayer) return;
+      if (getMySportsmasterTieBreakAttempt()) {
+        showMessage(els.miniGameMessage, "You have already played this tie-break for the selected week.", "error");
+        return;
+      }
+
+      miniGameRunning = true;
+      miniGameStartedAt = performance.now();
+      els.miniGameStartButton.disabled = true;
+      els.miniGameStopButton.disabled = false;
+      els.miniGameStatus.textContent = "Running";
+      els.miniGameStatus.className = "status locked";
+      showMessage(els.miniGameMessage, "Timer running. Press SPACE or click Stop.", "");
+    }
+
+    async function stopMiniGame() {
+      if (!miniGameRunning || !miniGameStartedAt) return;
+
+      const elapsedSeconds = (performance.now() - miniGameStartedAt) / 1000;
+      miniGameRunning = false;
+      miniGameStartedAt = null;
+      els.miniGameStopButton.disabled = true;
+
+      try {
+        await saveSportsmasterTieBreakAttempt(elapsedSeconds);
+        showMessage(
+          els.miniGameMessage,
+          `Saved: ${elapsedSeconds.toFixed(3)} seconds. Target was ${sportsmasterTieBreakTarget} seconds.`,
+          "success"
+        );
+      } catch (error) {
+        showMessage(els.miniGameMessage, error.message, "error");
+      } finally {
+        renderSportsmasterTieBreak();
+      }
+    }
+
+    function renderSportsmasterTieBreak() {
+      if (!currentUser || !currentPlayer || !els.sportsmasterTieBreakCard) return;
+
+      const myAttempt = getMySportsmasterTieBreakAttempt();
+      const ordered = [...sportsmasterTieBreakAttempts].sort((a, b) =>
+        Number(a.differenceSeconds || 999) - Number(b.differenceSeconds || 999) ||
+        String(a.playerNickname || "").localeCompare(String(b.playerNickname || ""))
+      );
+
+      els.miniGameTarget.textContent = sportsmasterTieBreakTarget
+        ? `Target: ${sportsmasterTieBreakTarget} seconds`
+        : "Target: loading...";
+
+      if (!miniGameRunning) {
+        els.miniGameStatus.textContent = myAttempt ? "Played" : "Ready";
+        els.miniGameStatus.className = myAttempt ? "status complete" : "status";
+        els.miniGameStartButton.disabled = Boolean(myAttempt) || !sportsmasterTieBreakTarget;
+        els.miniGameStopButton.disabled = true;
+      }
+
+      if (myAttempt && !miniGameRunning) {
+        showMessage(
+          els.miniGameMessage,
+          `Your result: ${Number(myAttempt.resultSeconds).toFixed(3)} seconds. Difference: ${Number(myAttempt.differenceSeconds).toFixed(3)} seconds.`,
+          "success"
+        );
+      }
+
+      if (ordered.length === 0) {
+        els.miniGameLeaderboard.innerHTML = `<p class="muted">No tie-break attempts have been recorded for this week yet.</p>`;
+        return;
+      }
+
+      els.miniGameLeaderboard.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Result</th>
+                <th>Difference</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ordered.map(attempt => `
+                <tr>
+                  <td>${escapeHtml(attempt.playerNickname || getPlayerName(attempt.playerId))}</td>
+                  <td>${Number(attempt.resultSeconds || 0).toFixed(3)}s</td>
+                  <td>${Number(attempt.differenceSeconds || 0).toFixed(3)}s</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function getSelectedWeekPointsByPlayer() {
+      const selectedWeekScores = new Map();
+      for (const player of players) selectedWeekScores.set(player.id, 0);
+
+      for (const event of events) {
+        if (event.winnerPlayerId) {
+          selectedWeekScores.set(
+            event.winnerPlayerId,
+            (selectedWeekScores.get(event.winnerPlayerId) || 0) + 1
+          );
+        }
+      }
+
+      return selectedWeekScores;
+    }
+
+    function renderLeaderboard() {
+      const selectedWeekScores = getSelectedWeekPointsByPlayer();
+      const selectedWeekLabel = viewingCurrentWeek()
+        ? "Latest week"
+        : `Selected week ${selectedWeekId}`;
+
+      const ordered = players
+        .map(player => ({
+          id: player.id,
+          name: player.nickname || player.fullName || "Player",
+          selectedWeekPoints: Number(selectedWeekScores.get(player.id) || 0),
+          lifetimePoints: Number(allTimeScores.get(player.id) ?? player.lifetimePoints ?? 0)
+        }))
+        .sort((a, b) => b.lifetimePoints - a.lifetimePoints || a.name.localeCompare(b.name));
+
+      if (ordered.length === 0) {
+        els.leaderboard.innerHTML = `<p class="muted">No players yet.</p>`;
+        return;
+      }
+
+      els.leaderboard.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>${escapeHtml(selectedWeekLabel)}</th>
+                <th>Total points</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${ordered.map(row => `
+                <tr>
+                  <td>${escapeHtml(row.name)}</td>
+                  <td>${row.selectedWeekPoints}</td>
+                  <td>${row.lifetimePoints}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function markPredictionInputUnsaved(input) {
+      const cell = input.closest(".prediction-cell");
+      if (!cell) return;
+      const status = cell.querySelector(".prediction-save-status");
+      const button = cell.querySelector(".save-prediction-button");
+      if (button && button.textContent.trim() !== "Save prediction") {
+        button.textContent = "Update prediction";
+      }
+      if (status) {
+        status.textContent = button && button.textContent.trim() === "Save prediction" ? "Not saved yet" : "Unsaved changes";
+        status.className = "save-status prediction-save-status unsaved";
+      }
+    }
+
+    function attachPredictionHandlers() {
+      document.querySelectorAll(".prediction-input").forEach(input => {
+        input.addEventListener("input", () => {
+          if (input.dataset.eventId) {
+            predictionDrafts.set(draftKey(input.dataset.eventId), input.value);
+            markPredictionInputUnsaved(input);
+          }
+        });
+      });
+
+      document.querySelectorAll(".tie-break-answer-input").forEach(input => {
+        input.addEventListener("input", () => {
+          if (input.dataset.eventId) {
+            tieBreakDrafts.set(draftKey(input.dataset.eventId), input.value);
+            markPredictionInputUnsaved(input);
+          }
+        });
+      });
+
+      document.querySelectorAll(".save-prediction-button").forEach(button => {
+        button.addEventListener("click", async () => {
+          const eventId = button.dataset.eventId;
+          const input = document.querySelector(`.prediction-input[data-event-id="${cssEscape(eventId)}"]`);
+          const tieBreakInput = document.querySelector(`.tie-break-answer-input[data-event-id="${cssEscape(eventId)}"]`);
+
+          try {
+            button.disabled = true;
+            await savePrediction(eventId, input.value, tieBreakInput ? tieBreakInput.value : "");
+            predictionDrafts.delete(draftKey(eventId));
+            tieBreakDrafts.delete(draftKey(eventId));
+            button.textContent = "Update prediction";
+            const status = button.parentElement.querySelector(".prediction-save-status");
+            if (status) {
+              status.textContent = "Prediction saved";
+              status.className = "save-status prediction-save-status saved";
+            }
+          } catch (error) {
+            alert(error.message);
+          } finally {
+            button.disabled = isLockedNow() || isReadOnlyView();
+          }
+        });
+      });
+    }
+
+    function attachResultHandlers() {
+      document.querySelectorAll(".actual-result-input").forEach(input => {
+        input.addEventListener("input", () => {
+          if (input.dataset.eventId) {
+            actualResultDrafts.set(actualResultDraftKey(input.dataset.eventId), input.value);
+            const cell = input.closest(".result-cell");
+            const status = cell ? cell.querySelector(".actual-result-save-status") : null;
+            const button = cell ? cell.querySelector(".save-result-button") : null;
+            if (button && button.textContent.trim() !== "Save actual result") button.textContent = "Update actual result";
+            if (status) {
+              status.textContent = button && button.textContent.trim() === "Save actual result" ? "Not saved yet" : "Unsaved changes";
+              status.className = "save-status actual-result-save-status unsaved";
+            }
+          }
+        });
+      });
+
+      document.querySelectorAll(".save-result-button").forEach(button => {
+        button.addEventListener("click", async () => {
+          const eventId = button.dataset.eventId;
+          const input = document.querySelector(`.actual-result-input[data-event-id="${cssEscape(eventId)}"]`);
+
+          try {
+            button.disabled = true;
+            await saveActualResult(eventId, input.value);
+            actualResultDrafts.delete(actualResultDraftKey(eventId));
+            button.textContent = "Update actual result";
+            const status = button.parentElement.querySelector(".actual-result-save-status");
+            if (status) {
+              status.textContent = "Actual result saved";
+              status.className = "save-status actual-result-save-status saved";
+            }
+          } catch (error) {
+            alert(error.message);
+          } finally {
+            button.disabled = false;
+          }
+        });
+      });
+    }
+
+    function attachWinnerHandlers() {
+      document.querySelectorAll(".winner-select").forEach(select => {
+        select.addEventListener("change", async () => {
+          if (!select.value) return;
+
+          try {
+            await markWinner(select.dataset.eventId, select.value);
+          } catch (error) {
+            alert(error.message);
+          }
+        });
+      });
+    }
+
+    function getPlayerName(playerId) {
+      const player = players.find(item => item.id === playerId);
+      return player ? player.nickname || player.fullName || "Player" : "Player";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value);
+    }
+
+    function cssEscape(value) {
+      if (window.CSS && CSS.escape) return CSS.escape(value);
+      return String(value).replace(/"/g, '\\"');
+    }
+
+    els.registerForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      showMessage(els.registerMessage, "");
+
+      try {
+        const credential = await createUserWithEmailAndPassword(
+          auth,
+          els.registerEmail.value.trim(),
+          els.registerPassword.value
+        );
+
+        await setDoc(doc(db, "players", credential.user.uid), {
+          fullName: els.registerFullName.value.trim(),
+          nickname: els.registerNickname.value.trim(),
+          email: els.registerEmail.value.trim().toLowerCase(),
+          active: true,
+          lifetimePoints: 0,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        showMessage(els.registerMessage, "Registered successfully.", "success");
+      } catch (error) {
+        showMessage(els.registerMessage, error.message, "error");
+      }
     });
-    html+=`</div>`;div.innerHTML=html;cont.appendChild(div);
-  });
-  openCards.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('open');});
-  renderThirds();
-}
-function renderThirds(){
-  const{thirds}=getAdvancing();const grid=document.getElementById('thirds-grid');grid.innerHTML='';
-  for(let i=0;i<12;i++){const t=thirds[i];const d=document.createElement('div');d.className='third-slot'+(t?' qual':'');d.innerHTML=t?`<div class="third-name">${flag(t.name)}${t.name}</div><div class="third-pts">${t.pts}pts GD${t.gd>=0?'+':''}${t.gd}</div>`:`<div class="third-name" style="opacity:.3">#${i+1}</div>`;grid.appendChild(d);}
-}
-function renderKOStage(containerId,pairsObj){
-  const cont=document.getElementById(containerId);if(!cont)return;
-  const openCards=new Set([...cont.querySelectorAll('.mc.open')].map(el=>el.id));
-  const grid=document.createElement('div');grid.className='ko-grid';
-  Object.entries(pairsObj).forEach(([id,pair])=>{
-    const mid=parseInt(id);const m=MATCHES.find(x=>x.id===mid);
-    const isTbd=pair[0]==='?'||pair[1]==='?';const w=koWin(mid);
-    const wrap=document.createElement('div');wrap.className='ko-match-wrap'+(w!==null?' decided':'');
-    wrap.innerHTML=`<div class="ko-match-meta-bar">M${mid}${m?' · '+m.city:''}</div>`+buildMC(mid,pair[0],pair[1],{matchLabel:`M${mid}`,metaLine:m?`${m.date.slice(5).replace('-','/')} · ${m.time} · ${m.venue}, ${m.city}`:'',round:m?m.round:'',tbd:isTbd});
-    grid.appendChild(wrap);
-  });
-  cont.innerHTML='';cont.appendChild(grid);
-  openCards.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('open');});
-}
-function renderKO(){
-  const{p32,p16,pqf,psf}=allPairs();
-  renderKOStage('ko-r32',p32);renderKOStage('ko-r16',p16);renderKOStage('ko-qf',pqf);renderKOStage('ko-sf',psf);
-  const cont3p=document.getElementById('ko-3p');const m103=MATCHES.find(x=>x.id===103);
-  const tp3h=pairLoser(101,psf),tp3a=pairLoser(102,psf);
-  if(cont3p){const wasOpen=cont3p.querySelector('.mc.open');cont3p.innerHTML=buildMC(103,tp3h,tp3a,{matchLabel:'M103',metaLine:m103?`${m103.date.slice(5)} · ${m103.time} · ${m103.venue}`:'',round:'3p',tbd:tp3h==='?'||tp3a==='?'});if(wasOpen)cont3p.querySelector('.mc')?.classList.add('open');}
-  const contF=document.getElementById('ko-final');const m104=MATCHES.find(x=>x.id===104);
-  const finH=pairWinner(101,psf),finA=pairWinner(102,psf);
-  if(contF){const wasOpen=contF.querySelector('.mc.open');contF.innerHTML=buildMC(104,finH,finA,{matchLabel:'M104',metaLine:m104?`${m104.date} · ${m104.time} · ${m104.venue}`:'',round:'final',tbd:finH==='?'||finA==='?'});if(wasOpen)contF.querySelector('.mc')?.classList.add('open');}
-  const champ=document.getElementById('champion-display');const w104=koWin(104);
-  if(champ){if(w104!==null&&finH!=='?'&&finA!=='?'){const winner=w104===0?finH:finA;champ.innerHTML=`<div class="champion-banner">🏆 World Champion: ${flag(winner)} ${winner}</div>`;}else champ.innerHTML='';}
-}
-let schRound='all',schCountry='all',schSearch='';
-function setSchRound(el,val){schRound=val;document.querySelectorAll('#round-pills .pill').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderSchedule();}
-function setSchCountry(el,val){schCountry=val;document.querySelectorAll('#country-pills .pill').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderSchedule();}
-function setSchSearch(v){schSearch=v.trim().toLowerCase();renderSchedule();}
-function getTeamsForSchedule(m){if(m.round==='gs')return{home:m.home,away:m.away};const t=resolveTeams(m.id);return{home:t?t[0]:'?',away:t?t[1]:'?'};}
-function renderSchedule(){
-  const openCards=new Set([...document.querySelectorAll('#sch-list .mc.open')].map(el=>el.id));
-  let matches=MATCHES.filter(m=>{
-    if(schRound!=='all'&&m.round!==schRound)return false;
-    if(schCountry!=='all'&&m.country!==schCountry)return false;
-    if(schSearch){const t=getTeamsForSchedule(m);const hay=[t.home,t.away,m.city,m.venue,m.group||'',ROUND_LABELS[m.round]||''].join(' ').toLowerCase();if(!hay.includes(schSearch))return false;}
-    return true;
-  });
-  document.getElementById('sch-stats').innerHTML=`<div class="sch-stat">Showing <b>${matches.length}</b> matches</div><div class="sch-stat">Groups: <b>Jun 11–27</b></div><div class="sch-stat">Final: <b>Jul 19</b></div>`;
-  const list=document.getElementById('sch-list');
-  if(!matches.length){list.innerHTML='<div class="no-results">No matches found.</div>';return;}
-  const byDate={};matches.forEach(m=>{if(!byDate[m.date])byDate[m.date]=[];byDate[m.date].push(m);});
-  let html='';
-  Object.keys(byDate).sort().forEach(date=>{
-    const day=byDate[date].sort((a,b)=>a.time.localeCompare(b.time));
-    html+=`<div class="day-block"><div class="day-hdr">${fmtDate(date)} — ${day.length} match${day.length>1?'es':''}</div><div class="sch-cards">`;
-    day.forEach(m=>{const t=getTeamsForSchedule(m);html+=buildMC(m.id,t.home,t.away,{matchLabel:`M${m.id}${m.group?' · Grp '+m.group:''}`,metaLine:`⏱ ${m.time} local · ${m.venue}, ${m.city}`,roundCls:m.round,badgeLabel:ROUND_LABELS[m.round],round:m.round,tbd:t.home==='?'||t.away==='?'});});
-    html+='</div></div>';
-  });
-  list.innerHTML=html;
-  openCards.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('open');});
-}
-function showSec(id){
-  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
 
-  const sec = document.getElementById('sec-' + id);
-  if(sec) sec.classList.add('active');
+    els.signInForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      showMessage(els.signInMessage, "");
 
-  const order = ['groups','r32','r16','qf','sf','final','schedule'];
+      try {
+        await signInWithEmailAndPassword(
+          auth,
+          els.signInEmail.value.trim(),
+          els.signInPassword.value
+        );
+      } catch (error) {
+        showMessage(els.signInMessage, error.message, "error");
+      }
+    });
 
-  document.querySelectorAll('.nav .nav-btn:not(.danger)').forEach((b, i) => {
-    b.classList.toggle('active', order[i] === id);
-  });
+    els.signOutButton.addEventListener("click", async () => {
+      await signOut(auth);
+    });
 
-  if(id === 'schedule') renderSchedule();
-}
-let hasAutoOpenedRelevantSection = false;
-function renderAll(){
-  renderGroups();
-  renderKO();
+    els.withdrawButton.addEventListener("click", async () => {
+      if (!currentUser || !currentPlayer || isReadOnlyView()) return;
 
-  if(!hasAutoOpenedRelevantSection){
-    hasAutoOpenedRelevantSection = true;
-    showSec(getRelevantSection());
-  }
+      const newActiveState = currentPlayer.active === false;
+      await setDoc(doc(db, "players", currentUser.uid), {
+        active: newActiveState,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
 
-  if(document.getElementById('sec-schedule') && document.getElementById('sec-schedule').classList.contains('active')){
-    renderSchedule();
-  }
-}
+      currentPlayer.active = newActiveState;
+      render();
+    });
 
-function hasAnyScore(start, end){
-  for(let i = start; i <= end; i++){
-    if(getScore(i)) return true;
-  }
-  return false;
-}
+    els.eventForm.addEventListener("input", () => {
+      eventFormDirty = true;
+      const myEvent = events.find(event => event.ownerPlayerId === (currentUser ? currentUser.uid : ""));
+      els.saveEventButton.textContent = myEvent ? "Update event" : "Save new event";
+      showMessage(els.eventMessage, myEvent ? "Unsaved changes. Press Update event to save them." : "Event not saved yet.", myEvent ? "error" : "");
+    });
 
-function hasBothTeams(mid){
-  const t=resolveTeams(mid);
-  return t&&t[0]&&t[1]&&t[0]!=='?'&&t[1]!=='?';
-}
+    els.tieBreakType.addEventListener("change", () => {
+      eventFormDirty = true;
+      toggleTieBreakDetails();
+    });
 
-function hasAnyTeams(start,end){
-  for(let i=start;i<=end;i++){
-    if(hasBothTeams(i))return true;
-  }
-  return false;
-}
+    els.miniGameStartButton.addEventListener("click", startMiniGame);
+    els.miniGameStopButton.addEventListener("click", stopMiniGame);
 
-function getRelevantSection(){
-  if(hasAnyScore(104)) return 'final';
-  if(hasAnyScore(101, 103)) return 'sf';
-  if(hasAnyScore(97, 100)) return 'qf';
-  if(hasAnyScore(89, 96)) return 'r16';
-  if(hasAnyScore(73, 88)) return 'r32';
+    window.addEventListener("keydown", event => {
+      if (event.code === "Space" && miniGameRunning) {
+        event.preventDefault();
+        stopMiniGame();
+      }
+    });
 
-  if(hasAnyTeams(73, 88)) return 'r32';
+    els.weekSelector.addEventListener("change", () => {
+      selectedWeekId = els.weekSelector.value;
+      eventFormDirty = false;
+      eventFormLoadedKey = null;
+      startEventsListener();
+      render();
+    });
 
-  return 'groups';
-}
+    els.latestWeekButton.addEventListener("click", async () => {
+      selectedWeekId = currentWeekId();
+      eventFormDirty = false;
+      eventFormLoadedKey = null;
+      await ensureWeekDocument();
+      startEventsListener();
+      renderWeekSelector();
+      render();
+    });
 
-let toastTimer=null;
-function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type;void el.offsetWidth;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
+    els.eventForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      showMessage(els.eventMessage, "");
 
-// Auto-launch safely, even if Firebase is slow or fails to load
-let appStarted = false;
+      if (!currentUser || !currentPlayer) return;
 
-function startApp(){
-  if(appStarted) return;
-  appStarted = true;
+      if (isReadOnlyView()) {
+        showMessage(els.eventMessage, "Previous weeks are read-only.", "error");
+        return;
+      }
 
-  if(window._fbImports){
-    launch(true);
-  } else {
-    launch(false);
-  }
-}
+      if (isLockedNow()) {
+        showMessage(els.eventMessage, "Entries are locked for this week.", "error");
+        return;
+      }
 
-window.addEventListener('fbReady', () => {
-  if(!appStarted) startApp();
-}, {once:true});
+      if (!isEventTimeInsideWindow(els.eventStartAt.value)) {
+        showMessage(
+          els.eventMessage,
+          "The event must start between Friday 1700 and Monday 0800 New Zealand Time.",
+          "error"
+        );
+        return;
+      }
 
-if(document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(startApp, 500);
-  });
-} else {
-  setTimeout(startApp, 500);
-}
+      if (!els.predictionFormat.value.trim()) {
+        showMessage(els.eventMessage, "Please specify the prediction format.", "error");
+        return;
+      }
 
-// Final fallback in case Firebase import hangs or the event is missed
-setTimeout(startApp, 2000);
-</script>
+      if (els.tieBreakType.value === "text" && !els.tieBreakQuestion.value.trim()) {
+        showMessage(els.eventMessage, "Please specify the tie-break question or set tie-break to none.", "error");
+        return;
+      }
+
+      if (els.tieBreakType.value === "text" && !els.tieBreakFormat.value.trim()) {
+        showMessage(els.eventMessage, "Please specify the tie-break format or set tie-break to none.", "error");
+        return;
+      }
+
+      try {
+        await ensureWeekDocument();
+        await setDoc(doc(db, "weeks", selectedWeekId, "events", currentUser.uid), {
+          ownerPlayerId: currentUser.uid,
+          ownerNickname: currentPlayer.nickname || currentPlayer.fullName,
+          sport: els.sport.value.trim(),
+          eventName: els.eventName.value.trim(),
+          eventLink: els.eventLink.value.trim(),
+          eventStartAt: els.eventStartAt.value,
+          challengeDescription: els.challengeDescription.value.trim(),
+          predictionFormat: els.predictionFormat.value.trim(),
+          tieBreakType: els.tieBreakType.value,
+          tieBreakQuestion: els.tieBreakType.value === "text" ? els.tieBreakQuestion.value.trim() : "",
+          tieBreakFormat: els.tieBreakType.value === "text" ? els.tieBreakFormat.value.trim() : "",
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+
+        eventFormDirty = false;
+        eventFormLoadedKey = null;
+        els.saveEventButton.textContent = "Update saved event";
+        showMessage(els.eventMessage, "Event saved. Any further changes will update this event.", "success");
+      } catch (error) {
+        showMessage(els.eventMessage, error.message, "error");
+      }
+    });
+
+    onAuthStateChanged(auth, async user => {
+      currentUser = user;
+      currentPlayer = null;
+      currentIsAdmin = false;
+      if (els.adminBadge) els.adminBadge.classList.add("hidden");
+      stopRealtimeListeners();
+
+      if (!user) {
+        els.authCard.classList.remove("hidden");
+        els.playerCard.classList.add("hidden");
+        els.eventCard.classList.add("hidden");
+        els.gameCard.classList.add("hidden");
+        els.sportsmasterTieBreakCard.classList.add("hidden");
+        els.scoreCard.classList.add("hidden");
+        els.signedInActions.classList.add("hidden");
+        selectedWeekId = currentWeekId();
+        updateWeekDisplay();
+        return;
+      }
+
+      await ensureWeekDocument();
+      selectedWeekId = currentWeekId();
+      currentPlayer = await loadCurrentPlayer(user);
+      currentIsAdmin = await loadCurrentAdminStatus(user);
+
+      if (!currentPlayer) {
+        alert("Signed in, but no player profile was found. Admins must also have a player profile.");
+        await signOut(auth);
+        return;
+      }
+
+      els.authCard.classList.add("hidden");
+      els.playerCard.classList.remove("hidden");
+      els.eventCard.classList.remove("hidden");
+      els.gameCard.classList.remove("hidden");
+      els.sportsmasterTieBreakCard.classList.remove("hidden");
+      els.scoreCard.classList.remove("hidden");
+      els.signedInActions.classList.remove("hidden");
+
+      startRealtimeListeners();
+      render();
+    });
+
+    selectedWeekId = currentWeekId();
+    toggleTieBreakDetails();
+    updateWeekDisplay();
+    setInterval(refreshWeekIfNeeded, 30000);
+  </script>
 </body>
 </html>
